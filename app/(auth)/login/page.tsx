@@ -2,15 +2,44 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
+import axios from 'axios'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log({ email, password })
-    // TODO: handle login logic here
+    setError('')
+    setIsLoading(true)
+
+    try {
+      const response = await axios.post('http://localhost:5000/api/auth/login', {
+        email,
+        password,
+      })
+
+      // Store token in localStorage
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token)
+        localStorage.setItem('user', JSON.stringify(response.data.user))
+      }
+
+      // Redirect to home or chat page
+      window.location.href = '/user'
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        const errorMessage = err.response?.data?.message || err.message || 'Login failed'
+        setError(errorMessage)
+      } else {
+        const errorMessage = err instanceof Error ? err.message : 'Something went wrong'
+        setError(errorMessage)
+      }
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
