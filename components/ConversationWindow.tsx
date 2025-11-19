@@ -114,8 +114,8 @@ export default function ConversationWindow({
     if (!previousMessage) return true
     
     // Get timestamp from either 'timestamp' or 'createdAt' field
-    const currentTimestamp = currentMessage.timestamp || (currentMessage as any).createdAt
-    const previousTimestamp = previousMessage.timestamp || (previousMessage as any).createdAt
+    const currentTimestamp = currentMessage.timestamp || (currentMessage as Message).createdAt
+    const previousTimestamp = previousMessage.timestamp || (previousMessage as Message).createdAt
     
     if (!currentTimestamp || !previousTimestamp) return false
     
@@ -199,7 +199,7 @@ export default function ConversationWindow({
           const showDateSeparator = shouldShowDateSeparator(message, previousMessage)
           
           // Get timestamp from either 'timestamp' or 'createdAt' field
-          const messageTimestamp = message.timestamp || (message as any).createdAt || new Date()
+          const messageTimestamp = message.timestamp || (message as Message).createdAt || new Date()
           
           // For group chats, check if we should show sender name
           const isGroupChat = selectedChat?.isGroupChat
