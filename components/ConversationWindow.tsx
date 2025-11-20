@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react'
 import { Message, Chat } from '@/types'
+import { getUserInitials, getFullName } from '../utils/userUtils'
 
 interface ConversationWindowProps {
   selectedChat: Chat | null
@@ -165,7 +166,17 @@ export default function ConversationWindow({
   }
 
   const otherUser = getOtherParticipant(selectedChat)
-  const isOnline = isUserOnline(otherUser._id)
+  const isGroupChat = selectedChat.isGroupChat
+  const isOnline = !isGroupChat && isUserOnline(otherUser._id)
+  const displayName = isGroupChat 
+    ? (selectedChat.groupName || 'Group Chat') 
+    : getFullName(otherUser.firstName, otherUser.lastName)
+  
+  const displayAvatar = isGroupChat 
+    ? (selectedChat.groupName?.charAt(0).toUpperCase() || 'G')
+    : (otherUser.profilePicture 
+        ? null 
+        : getUserInitials(otherUser.firstName, otherUser.lastName))
 
   return (
     <div className="flex-1 flex flex-col bg-white">
@@ -173,19 +184,32 @@ export default function ConversationWindow({
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className="relative">
-            <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
-              <span className="text-white font-semibold">
-                {otherUser.name.charAt(0).toUpperCase()}
-              </span>
-            </div>
+            {isGroupChat ? (
+              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+                <span className="text-white font-semibold">{displayAvatar}</span>
+              </div>
+            ) : otherUser.profilePicture ? (
+              <img 
+                src={otherUser.profilePicture} 
+                alt={displayName}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+                <span className="text-white font-semibold">{displayAvatar}</span>
+              </div>
+            )}
             {isOnline && (
               <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
             )}
           </div>
           <div>
-            <p className="font-semibold text-gray-800">{otherUser.name}</p>
+            <p className="font-semibold text-gray-800">{displayName}</p>
             <p className="text-xs text-gray-500">
-              {isOnline ? 'Online' : 'Offline'}
+              {isGroupChat 
+                ? `${selectedChat.participants?.length || 0} participants`
+                : (isOnline ? 'Online' : 'Offline')
+              }
             </p>
           </div>
         </div>
@@ -208,6 +232,24 @@ export default function ConversationWindow({
             previousMessage.sender === message.sender &&
             !shouldShowDateSeparator(message, previousMessage)
 
+            // Get sender name for display (with fallback)
+          const getSenderDisplayName = () => {
+            if (message.senderName) {
+              return message.senderName
+            }
+            // Fallback: try to find sender in participants
+            if (selectedChat && isGroupChat) {
+              const senderParticipant = selectedChat.participants.find(p => p._id === message.sender)
+              if (senderParticipant) {
+                return getFullName(senderParticipant.firstName, senderParticipant.lastName)
+              }
+            }
+            return 'Unknown'
+          }
+
+          const senderDisplayName = getSenderDisplayName()
+          const senderInitial = senderDisplayName.charAt(0).toUpperCase()
+
           return (
             <React.Fragment key={message._id || `temp-${index}`}>
               {showDateSeparator && (
@@ -228,7 +270,7 @@ export default function ConversationWindow({
                     {(!previousMessageSameSender || showDateSeparator) && (
                       <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center">
                         <span className="text-white text-xs font-semibold">
-                          {message.senderName?.charAt(0).toUpperCase() || '?'}
+                          {senderInitial}
                         </span>
                       </div>
                     )}
@@ -238,7 +280,7 @@ export default function ConversationWindow({
                   {/* Show sender name for group chats */}
                   {showSenderName && (!previousMessageSameSender || showDateSeparator) && (
                     <p className="text-xs font-medium text-gray-600 mb-1 px-1">
-                      {message.senderName}
+                      {senderDisplayName}
                     </p>
                   )}
                   <div

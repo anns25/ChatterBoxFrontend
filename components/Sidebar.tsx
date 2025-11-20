@@ -2,13 +2,8 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-
-interface User {
-  id: string
-  name: string
-  email: string
-  role: string
-}
+import { getUserInitials, getFullName } from '../utils/userUtils'
+import { User } from '../types'
 
 interface SidebarProps {
   user: User
@@ -32,12 +27,24 @@ export default function Sidebar({ user, onLogout, currentPage = 'chats' }: Sideb
         {/* Profile */}
         <div className="px-4 mb-6">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-              <span className="text-lg font-semibold">{user.name.charAt(0).toUpperCase()}</span>
-            </div>
+            {user.profilePicture ? (
+              <img 
+                src={user.profilePicture} 
+                alt={getFullName(user.firstName, user.lastName)}
+                className="w-10 h-10 rounded-full flex-shrink-0 object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                <span className="text-lg font-semibold">
+                  {getUserInitials(user.firstName, user.lastName)}
+                </span>
+              </div>
+            )}
             {expanded && (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{user.name}</p>
+                <p className="text-sm font-medium truncate">
+                  {getFullName(user.firstName, user.lastName)}
+                </p>
                 <p className="text-xs text-gray-400 truncate">{user.email}</p>
               </div>
             )}

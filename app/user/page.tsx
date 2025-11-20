@@ -22,6 +22,31 @@ export default function UserChatPage() {
   const socketRef = useRef<Socket | null>(null)
   const chatIdFromUrlRef = useRef<string | null>(null)
   const hasProcessedUrlChatRef = useRef(false)
+  const selectedChatRef = useRef<Chat | null>(null)
+
+  // Keep ref synced with selectedChat state
+  useEffect(() => {
+    selectedChatRef.current = selectedChat
+  }, [selectedChat])
+
+  // Helper function to update participant info in a chat
+  const updateParticipantInfo = useCallback((chat: Chat, senderId: string, senderName: string): Chat => {
+    const senderParticipant = chat.participants.find(p => p._id === senderId)
+    
+    // Only update if participant exists and is missing firstName/lastName
+    if (senderParticipant && (!senderParticipant.firstName || !senderParticipant.lastName) && senderName) {
+      const [firstName, ...rest] = senderName.split(' ')
+      const lastName = rest.join(' ') || ''
+      
+      const updatedParticipants = chat.participants.map(p =>
+        p._id === senderId ? { ...p, firstName, lastName } : p
+      )
+      
+      return { ...chat, participants: updatedParticipants }
+    }
+    
+    return chat
+  }, [])
 
   // Load user from localStorage after mount to avoid hydration mismatch
   useEffect(() => {
@@ -65,6 +90,27 @@ export default function UserChatPage() {
         headers: { Authorization: `Bearer ${token}` },
       })
       
+      // Update selectedChat participants if messages have sender info
+      if (selectedChatRef.current && selectedChatRef.current.isGroupChat) {
+        const messagesWithSenderInfo = response.data.filter((msg: Message) => msg.senderName)
+        
+        if (messagesWithSenderInfo.length > 0) {
+          setSelectedChat((currentChat) => {
+            if (!currentChat) return currentChat
+            
+            let updatedChat = currentChat
+            // Update participants for each unique sender in messages
+            messagesWithSenderInfo.forEach((msg: Message) => {
+              if (msg.senderName) {
+                updatedChat = updateParticipantInfo(updatedChat, msg.sender, msg.senderName)
+              }
+            })
+            
+            return updatedChat
+          })
+        }
+      }
+      
       // Use requestAnimationFrame to defer state update
       requestAnimationFrame(() => {
         setMessages(response.data)
@@ -72,7 +118,7 @@ export default function UserChatPage() {
     } catch (error) {
       console.error('Error fetching messages:', error)
     }
-  }, [])
+  }, [updateParticipantInfo])
 
   const fetchChats = useCallback(async (): Promise<Chat[]> => {
     try {
@@ -102,12 +148,28 @@ export default function UserChatPage() {
   const openChat = useCallback((chat: Chat) => {
     if (!chat._id) return
     
-    requestAnimationFrame(() => {
-      setSelectedChat(chat)
-      fetchMessages(chat._id)
-      if (socketRef.current) {
-        socketRef.current.emit('joinChat', chat._id)
+    // Always refresh chat data to ensure participants are fully populated
+    setChats((currentChats) => {
+      const fullChat = currentChats.find(c => c._id === chat._id)
+      if (fullChat) {
+        setSelectedChat(fullChat)
+        requestAnimationFrame(() => {
+          fetchMessages(fullChat._id)
+          if (socketRef.current) {
+            socketRef.current.emit('joinChat', fullChat._id)
+          }
+        })
+      } else {
+        // If not found in current chats, use the provided chat
+        setSelectedChat(chat)
+        requestAnimationFrame(() => {
+          fetchMessages(chat._id)
+          if (socketRef.current) {
+            socketRef.current.emit('joinChat', chat._id)
+          }
+        })
       }
+      return currentChats
     })
   }, [fetchMessages])
 
@@ -173,16 +235,26 @@ export default function UserChatPage() {
       }
     })
 
+    // Clean message handler using ref
     socketRef.current.on('message', (message: Message) => {
-      // Add message if it's for the currently selected chat
+      const currentChat = selectedChatRef.current // Always get latest chat
+      
       setMessages((prev) => {
-        if (selectedChat && message.chatId === selectedChat._id) {
+        if (currentChat && message.chatId === currentChat._id) {
           // Check if message already exists (prevent duplicates)
           const exists = prev.some(m => 
             m._id === message._id || 
             (!m._id && m.content === message.content && m.sender === message.sender)
           )
+          
           if (!exists) {
+            // Update selectedChat participants if this is a group chat
+            if (currentChat.isGroupChat && message.senderName) {
+              setSelectedChat((chat) => {
+                if (!chat || !message.senderName) return chat
+                return updateParticipantInfo(chat, message.sender, message.senderName)
+              })
+            }
             return [...prev, message]
           }
         }
@@ -190,10 +262,20 @@ export default function UserChatPage() {
       })
     })
 
+    // Clean messageSent handler using ref
     socketRef.current.on('messageSent', (message: Message) => {
-      // Replace optimistic message with real message from server
+      const currentChat = selectedChatRef.current // Always get latest chat
+      
       setMessages((prev) => {
-        if (selectedChat && message.chatId === selectedChat._id) {
+        if (currentChat && message.chatId === currentChat._id) {
+          // Update selectedChat participants if this is a group chat
+          if (currentChat.isGroupChat && message.senderName) {
+            setSelectedChat((chat) => {
+              if (!chat || !message.senderName) return chat
+              return updateParticipantInfo(chat, message.sender, message.senderName)
+            })
+          }
+          
           // Find and replace optimistic message (one without _id) with real message
           const optimisticIndex = prev.findIndex(m => 
             !m._id && 
@@ -219,9 +301,12 @@ export default function UserChatPage() {
     })
 
     socketRef.current.on('typing', (data: { userId: string; isTyping: boolean }) => {
+      const currentChat = selectedChatRef.current // Always get latest chat
+      const currentUser = user // Capture user from closure
+      
       // Only show typing if it's from the other user in current chat
-      if (selectedChat) {
-        const otherUserId = selectedChat.participants.find(p => p._id !== user.id)?._id
+      if (currentChat && currentUser) {
+        const otherUserId = currentChat.participants.find(p => p._id !== currentUser.id)?._id
         if (data.userId === otherUserId) {
           setIsTyping(data.isTyping)
         }
@@ -249,7 +334,7 @@ export default function UserChatPage() {
         socketRef.current.disconnect()
       }
     }
-  }, [user, selectedChat, chats])
+  }, [user, chats, updateParticipantInfo]) // Note: selectedChat NOT in deps - we use ref instead
 
   const handleChatSelect = (chat: Chat) => {
     openChat(chat)
@@ -257,15 +342,16 @@ export default function UserChatPage() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!messageInput.trim() || !selectedChat || !socketRef.current) return
+    const currentChat = selectedChatRef.current // Use ref to get latest chat
+    if (!messageInput.trim() || !currentChat || !socketRef.current) return
 
     const messageContent = messageInput.trim()
     setMessageInput('')
     setIsTyping(false)
 
     // Ensure sender is in the chat room
-    if (selectedChat._id) {
-      socketRef.current.emit('joinChat', selectedChat._id)
+    if (currentChat._id) {
+      socketRef.current.emit('joinChat', currentChat._id)
     }
 
     // Optimistically add message to UI (without _id, will be replaced when server responds)
@@ -273,23 +359,24 @@ export default function UserChatPage() {
       sender: user!.id,
       content: messageContent,
       timestamp: new Date(),
-      chatId: selectedChat._id,
+      chatId: currentChat._id,
     }
 
     setMessages((prev) => [...prev, tempMessage])
 
     // Send message via Socket.IO
     socketRef.current.emit('sendMessage', {
-      chatId: selectedChat._id,
+      chatId: currentChat._id,
       content: messageContent,
       sender: user!.id,
     })
   }
 
   const handleTyping = () => {
-    if (!selectedChat || !socketRef.current) return
+    const currentChat = selectedChatRef.current // Use ref to get latest chat
+    if (!currentChat || !socketRef.current) return
     socketRef.current.emit('typing', {
-      chatId: selectedChat._id,
+      chatId: currentChat._id,
       isTyping: true,
     })
   }

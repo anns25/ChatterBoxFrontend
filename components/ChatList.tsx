@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { Chat } from '@/types'
+import { getUserInitials, getFullName } from '../utils/userUtils'
 
 interface ChatListProps {
   chats: Chat[]
@@ -53,7 +54,7 @@ export default function ChatList({
       return chat.groupName
     }
     const otherUser = chat.participants.find(p => p._id !== currentUserId)
-    return otherUser?.name || 'Unknown'
+    return otherUser ? getFullName(otherUser.firstName, otherUser.lastName) : 'Unknown'
   }
 
   const getChatAvatar = (chat: Chat) => {
@@ -62,9 +63,10 @@ export default function ChatList({
       const groupName = chat.groupName || 'Group'
       return groupName.charAt(0).toUpperCase()
     }
-    // For individual chats, show first letter of other user's name
+    // For individual chats, show initials
     const otherUser = chat.participants.find(p => p._id !== currentUserId)
-    return otherUser?.name.charAt(0).toUpperCase() || '?'
+    if (!otherUser) return '?'
+    return getUserInitials(otherUser.firstName, otherUser.lastName)
   }
 
   const getChatSubtitle = (chat: Chat) => {
@@ -116,10 +118,8 @@ export default function ChatList({
               >
                 <div className="flex items-center space-x-3">
                   <div className="relative">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                      chat.isGroupChat ? 'bg-purple-500' : 'bg-blue-500'
-                    }`}>
-                      {chat.isGroupChat ? (
+                    {chat.isGroupChat ? (
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center bg-purple-500">
                         <svg
                           className="w-6 h-6 text-white"
                           fill="none"
@@ -133,12 +133,23 @@ export default function ChatList({
                             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                           />
                         </svg>
+                      </div>
+                    ) : (() => {
+                      const otherUser = chat.participants.find(p => p._id !== currentUserId)
+                      return otherUser?.profilePicture ? (
+                        <img 
+                          src={otherUser.profilePicture} 
+                          alt={getChatDisplayName(chat)}
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
                       ) : (
-                        <span className="text-white font-semibold">
-                          {getChatAvatar(chat)}
-                        </span>
-                      )}
-                    </div>
+                        <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center">
+                          <span className="text-white font-semibold">
+                            {getChatAvatar(chat)}
+                          </span>
+                        </div>
+                      )
+                    })()}
                     {isOnline && (
                       <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
                     )}
@@ -158,7 +169,10 @@ export default function ChatList({
                           {chat.isGroupChat && chat.lastMessage.sender !== currentUserId ? (
                             <>
                               <span className="font-medium">
-                                {chat.participants.find(p => p._id === chat.lastMessage?.sender)?.name || 'Someone'}:
+                                {(() => {
+                                  const sender = chat.participants.find(p => p._id === chat.lastMessage?.sender)
+                                  return sender ? getFullName(sender.firstName, sender.lastName) : 'Someone'
+                                })()}
                               </span>{' '}
                               {chat.lastMessage.content}
                             </>

@@ -5,7 +5,8 @@ import Link from 'next/link'
 import axios from 'axios'
 
 export default function SignupPage() {
-  const [name, setName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [role, setRole] = useState<'user' | 'admin'>('user')
@@ -20,7 +21,8 @@ export default function SignupPage() {
 
     try {
         const response = await axios.post('http://localhost:5000/api/auth/register', {
-          name,
+          firstName,
+          lastName,
           email,
           password,
           role,
@@ -34,11 +36,19 @@ export default function SignupPage() {
         }
   
         // Redirect to home or chat page
-        window.location.href = '/'
+        window.location.href = '/user'
       } catch (err) {
         if (axios.isAxiosError(err)) {
-          const errorMessage = err.response?.data?.message || err.message || 'Registration failed'
-          setError(errorMessage)
+          // Check for validation errors
+          if (err.response?.status === 422 && err.response?.data?.errors) {
+            const validationErrors = err.response.data.errors
+              .map((error: any) => error.msg || error.message)
+              .join(', ')
+            setError(validationErrors || 'Validation failed')
+          } else {
+            const errorMessage = err.response?.data?.message || err.message || 'Registration failed'
+            setError(errorMessage)
+          }
         } else {
           const errorMessage = err instanceof Error ? err.message : 'Something went wrong'
           setError(errorMessage)
@@ -84,12 +94,23 @@ export default function SignupPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+            <input
+              type="text"
+              placeholder="First Name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
           <div>
             <input
               type="text"
-              placeholder="Full Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              placeholder="Last Name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
               required
               className="w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />

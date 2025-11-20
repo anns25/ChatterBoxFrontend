@@ -5,19 +5,16 @@ import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import { io, Socket } from 'socket.io-client'
 import Sidebar from '../../../components/Sidebar'
-
-interface User {
-  id: string
-  name: string
-  email: string
-  role: string
-}
+import { User } from '../../../types'
+import { getFullName, getUserInitials } from '@/utils/userUtils'
 
 interface SearchResultUser {
   _id: string
-  name: string
+  firstName: string
+  lastName: string
   email: string
   role: string
+  profilePicture?: string
 }
 
 export default function SearchPage() {
@@ -291,16 +288,29 @@ export default function SearchPage() {
                   <div className="flex items-center space-x-4">
                     <div className="relative">
                       <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center">
-                        <span className="text-white font-semibold text-lg">
-                          {result.name.charAt(0).toUpperCase()}
-                        </span>
+                      {result.profilePicture ? (
+                        <img 
+                          src={result.profilePicture} 
+                          alt={getFullName(result.firstName, result.lastName)}
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center">
+                          <span className="text-white font-semibold text-lg">
+                            {getUserInitials(result.firstName, result.lastName)}
+                          </span>
+                        </div>
+                      )}
+                      {isUserOnline(result._id) && (
+                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                      )}
                       </div>
                       {isUserOnline(result._id) && (
                         <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
                       )}
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">{result.name}</p>
+                      <p className="font-semibold text-gray-900">{getFullName(result.firstName, result.lastName)}</p>
                       <p className="text-sm text-gray-600">{result.email}</p>
                       {result.role && (
                         <span className="inline-block mt-1 px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded">

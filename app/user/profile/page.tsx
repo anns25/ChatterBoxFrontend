@@ -4,21 +4,18 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import Sidebar from '../../../components/Sidebar'
-
-interface User {
-  id: string
-  name: string
-  email: string
-  role: string
-}
+import { User } from '../../../types'
+import { getUserInitials, getFullName } from '@/utils/userUtils'
 
 interface UserProfile {
   _id: string
-  name: string
+  firstName: string
+  lastName: string
   email: string
   role: string
   createdAt?: string
   lastLoginAt?: string
+  profilePicture?: string
 }
 
 export default function ProfilePage() {
@@ -32,7 +29,8 @@ export default function ProfilePage() {
   
   // Form state
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
   })
   
@@ -58,7 +56,8 @@ export default function ProfilePage() {
       const parsedUser = JSON.parse(userData)
       setUser(parsedUser)
       setFormData({
-        name: parsedUser.name,
+        firstName: parsedUser.firstName,
+        lastName: parsedUser.lastName,
         email: parsedUser.email,
       })
     } catch {
@@ -122,7 +121,8 @@ export default function ProfilePage() {
         // Update localStorage with new user data
         const updatedUser: User = {
           id: user.id,
-          name: response.data.name,
+          firstName: response.data.firstName,
+          lastName: response.data.lastName,
           email: response.data.email,
           role: user.role,
         }
@@ -291,12 +291,26 @@ export default function ProfilePage() {
               <form onSubmit={handleUpdateProfile} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Name
+                    First Name
                   </label>
                   <input
                     type="text"
-                    name="name"
-                    value={formData.name}
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
                     onChange={handleInputChange}
                     required
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -330,7 +344,8 @@ export default function ProfilePage() {
                     onClick={() => {
                       setIsEditing(false)
                       setFormData({
-                        name: user.name,
+                        firstName: user.firstName,
+                        lastName: user.lastName,
                         email: user.email,
                       })
                       setError('')
@@ -344,13 +359,21 @@ export default function ProfilePage() {
             ) : (
               <div className="space-y-4">
                 <div className="flex items-center space-x-4">
-                  <div className="w-20 h-20 rounded-full bg-blue-500 flex items-center justify-center">
-                    <span className="text-3xl font-semibold text-white">
-                      {user.name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
+                {user.profilePicture ? (
+                    <img 
+                      src={user.profilePicture} 
+                      alt={getFullName(user.firstName, user.lastName)}
+                      className="w-20 h-20 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 rounded-full bg-blue-500 flex items-center justify-center">
+                      <span className="text-3xl font-semibold text-white">
+                        {getUserInitials(user.firstName, user.lastName)}
+                      </span>
+                    </div>
+                  )}
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900">{user.name}</h3>
+                    <h3 className="text-xl font-semibold text-gray-900">{getFullName(user.firstName, user.lastName)}</h3>
                     <p className="text-gray-600">{user.email}</p>
                     <span className="inline-block mt-2 px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
                       {user.role}

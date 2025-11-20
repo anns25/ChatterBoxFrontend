@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import Sidebar from '../../../components/Sidebar'
 import { User, Chat } from '@/types'
+import { getFullName } from '@/utils/userUtils'
 
 export default function GroupsPage() {
   const router = useRouter()
@@ -62,7 +63,8 @@ export default function GroupsPage() {
       // Normalize the participant object to use 'id'
       const normalizedParticipant: User = {
         id: participantId,
-        name: participant.name,
+        firstName: participant.firstName,
+        lastName: participant.lastName,
         email: participant.email,
         role: (participant as any).role || 'user',
       }
@@ -189,7 +191,7 @@ export default function GroupsPage() {
                         onClick={() => handleAddParticipant(result)}
                         className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
                       >
-                        <p className="font-medium text-gray-900">{result.name}</p>
+                        <p className="font-medium text-gray-900">{getFullName(result.firstName, result.lastName)}</p>
                         <p className="text-sm text-gray-600">{result.email}</p>
                       </div>
                     )
@@ -208,7 +210,7 @@ export default function GroupsPage() {
                     className="flex items-center space-x-2 bg-blue-50 px-3 py-1 rounded-full"
                   >
                     <span className="text-sm font-medium text-blue-900">
-                      {participant.name}
+                      {getFullName(participant.firstName, participant.lastName)}
                     </span>
                     <button
                       type="button"
