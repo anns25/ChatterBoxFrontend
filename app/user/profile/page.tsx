@@ -7,6 +7,7 @@ import Sidebar from '../../../components/Sidebar'
 import { User } from '../../../types'
 import { getUserInitials, getFullName } from '@/utils/userUtils'
 import Image from 'next/image'
+import { themeClasses, themeStyles, componentStyles } from '@/utils/theme'
 
 interface UserProfile {
   _id: string
@@ -398,10 +399,10 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className={`flex h-screen ${themeClasses.bgPrimary}`}>
       <Sidebar user={user} onLogout={handleLogout} currentPage="profile" />
 
-      <div className="flex-1 flex flex-col bg-white overflow-y-auto">
+      <div className={`flex-1 flex flex-col overflow-y-auto ${themeClasses.bgSecondary}`}>
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
           <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>

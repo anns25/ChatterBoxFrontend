@@ -287,7 +287,6 @@ export default function SearchPage() {
                 >
                   <div className="flex items-center space-x-4">
                     <div className="relative">
-                      <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center">
                       {result.profilePicture ? (
                         <img 
                           src={result.profilePicture} 
@@ -301,10 +300,6 @@ export default function SearchPage() {
                           </span>
                         </div>
                       )}
-                      {isUserOnline(result._id) && (
-                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                      )}
-                      </div>
                       {isUserOnline(result._id) && (
                         <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
                       )}

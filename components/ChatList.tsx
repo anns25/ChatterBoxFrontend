@@ -3,6 +3,7 @@
 import React from 'react'
 import { Chat } from '@/types'
 import { getUserInitials, getFullName } from '../utils/userUtils'
+import { themeClasses, themeStyles, componentStyles } from '../utils/theme'
 
 interface ChatListProps {
   chats: Chat[]
@@ -89,13 +90,13 @@ export default function ChatList({
   }
 
   return (
-    <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-      <div className="p-4 border-b border-gray-200">
-        <h2 className="text-xl font-semibold text-gray-800">Chats</h2>
+    <div className={`w-80 flex flex-col ${themeClasses.bgPrimary} ${themeClasses.borderPrimary} border-r`}>
+      <div className={`p-4 border-b ${themeClasses.borderPrimary}`}>
+        <h2 className={`text-xl font-semibold ${themeClasses.textPrimary}`}>Chats</h2>
       </div>
       <div className="flex-1 overflow-y-auto">
         {chats.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">
+          <div className={`p-4 text-center ${themeClasses.textSecondary}`}>
             <p>No chats yet. Start a conversation!</p>
           </div>
         ) : (
@@ -103,7 +104,6 @@ export default function ChatList({
             const otherUser = getOtherParticipant(chat)
             const isOnline = !chat.isGroupChat && isUserOnline(otherUser._id)
             
-            // Get timestamp from either 'timestamp' or 'createdAt' field
             const lastMessageTime = chat.lastMessage 
               ? (chat.lastMessage.timestamp || chat.lastMessage.createdAt)
               : chat.updatedAt
@@ -112,14 +112,16 @@ export default function ChatList({
               <div
                 key={chat._id}
                 onClick={() => onChatSelect(chat)}
-                className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition ${
-                  selectedChat?._id === chat._id ? 'bg-blue-50' : ''
-                }`}
+                className={`p-4 border-b cursor-pointer transition ${
+                  selectedChat?._id === chat._id 
+                    ? themeClasses.bgAccent 
+                    : `${themeClasses.bgPrimary} hover:opacity-90`
+                } ${themeClasses.borderPrimary}`}
               >
                 <div className="flex items-center space-x-3">
                   <div className="relative">
                     {chat.isGroupChat ? (
-                      <div className="w-12 h-12 rounded-full flex items-center justify-center bg-purple-500">
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${themeClasses.bgAccent}`}>
                         <svg
                           className="w-6 h-6 text-white"
                           fill="none"
@@ -143,7 +145,7 @@ export default function ChatList({
                           className="w-12 h-12 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${themeClasses.bgAccent}`}>
                           <span className="text-white font-semibold">
                             {getChatAvatar(chat)}
                           </span>
@@ -151,21 +153,33 @@ export default function ChatList({
                       )
                     })()}
                     {isOnline && (
-                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                      <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2" style={{ backgroundColor: '#2FB8A8', borderColor: '#16181D' }}></div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold text-gray-800 truncate">
+                      <p className={`text-sm font-semibold truncate ${
+                        selectedChat?._id === chat._id 
+                          ? 'text-white' 
+                          : themeClasses.textPrimary
+                      }`}>
                         {getChatDisplayName(chat)}
                       </p>
-                      <span className="text-xs text-gray-500 ml-2 flex-shrink-0">
+                      <span className={`text-xs ml-2 flex-shrink-0 ${
+                        selectedChat?._id === chat._id 
+                          ? 'text-white opacity-90' 
+                          : themeClasses.textSecondary
+                      }`}>
                         {formatTime(lastMessageTime)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between mt-1">
                       {chat.lastMessage ? (
-                        <p className="text-sm text-gray-600 truncate flex-1">
+                        <p className={`text-sm truncate flex-1 ${
+                          selectedChat?._id === chat._id 
+                            ? 'text-white opacity-90' 
+                            : themeClasses.textSecondary
+                        }`}>
                           {chat.isGroupChat && chat.lastMessage.sender !== currentUserId ? (
                             <>
                               <span className="font-medium">
@@ -181,7 +195,11 @@ export default function ChatList({
                           )}
                         </p>
                       ) : (
-                        <p className="text-xs text-gray-500">
+                        <p className={`text-xs ${
+                          selectedChat?._id === chat._id 
+                            ? 'text-white opacity-90' 
+                            : themeClasses.textSecondary
+                        }`}>
                           {getChatSubtitle(chat)}
                         </p>
                       )}

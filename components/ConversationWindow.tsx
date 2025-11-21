@@ -1,8 +1,10 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Message, Chat } from '@/types'
 import { getUserInitials, getFullName } from '../utils/userUtils'
+import MessageRewriteModal from './MessageRewriteModal'
+import { themeClasses, themeStyles, componentStyles } from '../utils/theme'
 
 interface ConversationWindowProps {
   selectedChat: Chat | null
@@ -28,6 +30,7 @@ export default function ConversationWindow({
   onlineUsers,
 }: ConversationWindowProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [showRewriteModal, setShowRewriteModal] = useState(false)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -179,13 +182,13 @@ export default function ConversationWindow({
         : getUserInitials(otherUser.firstName, otherUser.lastName))
 
   return (
-    <div className="flex-1 flex flex-col bg-white">
+    <div className={`flex-1 flex flex-col ${themeClasses.bgPrimary}`}>
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+      <div className={`p-4 border-b flex items-center justify-between ${themeClasses.borderPrimary}`}>
         <div className="flex items-center space-x-3">
           <div className="relative">
             {isGroupChat ? (
-              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${themeClasses.bgAccent}`}>
                 <span className="text-white font-semibold">{displayAvatar}</span>
               </div>
             ) : otherUser.profilePicture ? (
@@ -195,17 +198,17 @@ export default function ConversationWindow({
                 className="w-10 h-10 rounded-full object-cover"
               />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${themeClasses.bgAccent}`}>
                 <span className="text-white font-semibold">{displayAvatar}</span>
               </div>
             )}
             {isOnline && (
-              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+              <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2" style={{ backgroundColor: '#2FB8A8', borderColor: '#16181D' }}></div>
             )}
           </div>
           <div>
-            <p className="font-semibold text-gray-800">{displayName}</p>
-            <p className="text-xs text-gray-500">
+            <p className={`font-semibold ${themeClasses.textPrimary}`}>{displayName}</p>
+            <p className={`text-xs ${themeClasses.textSecondary}`}>
               {isGroupChat 
                 ? `${selectedChat.participants?.length || 0} participants`
                 : (isOnline ? 'Online' : 'Offline')
@@ -215,8 +218,8 @@ export default function ConversationWindow({
         </div>
       </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-2">
         {messages.map((message, index) => {
           const isOwn = message.sender === currentUserId
           const previousMessage = index > 0 ? messages[index - 1] : undefined
@@ -267,7 +270,7 @@ export default function ConversationWindow({
             <React.Fragment key={message._id || `temp-${index}`}>
               {showDateSeparator && (
                 <div className="flex justify-center my-4">
-                  <div className="px-3 py-1 bg-gray-100 rounded-full text-xs text-gray-600">
+                  <div className={`px-3 py-1 rounded-full text-xs ${themeClasses.bgSecondary} ${themeClasses.textSecondary}`}>
                     {formatDateSeparator(messageTimestamp)}
                   </div>
                 </div>
@@ -280,7 +283,6 @@ export default function ConversationWindow({
                 {/* Show avatar for group chats when sender changes */}
                 {isGroupChat && !isOwn && (!previousMessageSameSender || showDateSeparator) && (
                   <div className="mr-2 flex-shrink-0">
-                    <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center">
                     {senderProfilePicture ? (
                       <img
                         src={senderProfilePicture}
@@ -288,32 +290,30 @@ export default function ConversationWindow({
                         className="w-8 h-8 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${themeClasses.bgAccent}`}>
                         <span className="text-white text-xs font-semibold">
                           {senderInitials}
                         </span>
                       </div>
                     )}
-                    </div>
                   </div>
                 )}
                 <div className={`flex flex-col ${isOwn ? 'items-end' : `items-start ${isGroupChat && previousMessageSameSender && !showDateSeparator ? 'ml-10' : ''}`}`}>
-
                   {/* Show sender name for group chats */}
                   {showSenderName && (!previousMessageSameSender || showDateSeparator) && (
-                    <p className="text-xs font-medium text-gray-600 mb-1 px-1">
+                    <p className={`text-xs font-medium mb-1 px-1 ${themeClasses.textSecondary}`}>
                       {senderDisplayName}
                     </p>
                   )}
                   <div
                     className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                       isOwn
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200 text-gray-800'
+                        ? `${themeClasses.bgAccent} text-white`
+                        : `${themeClasses.bgSecondary} ${themeClasses.textPrimary}`
                     }`}
                   >
                     <p className="text-sm break-words">{message.content}</p>
-                    <p className={`text-xs mt-1 ${isOwn ? 'text-blue-100' : 'text-gray-500'}`}>
+                    <p className={`text-xs mt-1 ${isOwn ? 'text-white opacity-80' : themeClasses.textSecondary}`}>
                       {formatTime(messageTimestamp)}
                     </p>
                   </div>
@@ -324,15 +324,15 @@ export default function ConversationWindow({
         })}
         {isTyping && (
           <div className="flex justify-start">
-            <div className="bg-gray-200 px-4 py-2 rounded-lg">
+            <div className={`px-4 py-2 rounded-lg ${themeClasses.bgSecondary}`}>
               <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
+                <div className={`w-2 h-2 rounded-full animate-bounce ${themeClasses.bgAccent}`}></div>
                 <div
-                  className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"
+                  className={`w-2 h-2 rounded-full animate-bounce ${themeClasses.bgAccent}`}
                   style={{ animationDelay: '0.1s' }}
                 ></div>
                 <div
-                  className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"
+                  className={`w-2 h-2 rounded-full animate-bounce ${themeClasses.bgAccent}`}
                   style={{ animationDelay: '0.2s' }}
                 ></div>
               </div>
@@ -343,8 +343,18 @@ export default function ConversationWindow({
       </div>
 
       {/* Message Input */}
-      <form onSubmit={onSendMessage} className="p-4 border-t border-gray-200">
+      <form onSubmit={onSendMessage} className={`p-4 border-t ${themeClasses.borderPrimary}`}>
         <div className="flex space-x-2">
+          {messageInput.trim() && (
+            <button
+              type="button"
+              onClick={() => setShowRewriteModal(true)}
+              className={`px-3 py-2 rounded-lg transition text-2xl hover:scale-110 active:scale-95 ${themeClasses.textAccent} hover:opacity-80`}
+              title="Rewrite message with AI"
+            >
+              ✨
+            </button>
+          )}
           <input
             type="text"
             value={messageInput}
@@ -353,17 +363,27 @@ export default function ConversationWindow({
               onTyping()
             }}
             placeholder="Type a message..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${themeClasses.borderPrimary} ${themeClasses.bgSecondary} ${themeClasses.textPrimary} focus:ring-[#2FB8A8]`}
           />
           <button
             type="submit"
             disabled={!messageInput.trim()}
-            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`px-6 py-2 rounded-lg transition font-medium disabled:opacity-50 disabled:cursor-not-allowed ${themeClasses.btnPrimary}`}
           >
             Send
           </button>
         </div>
       </form>
+
+      <MessageRewriteModal
+        isOpen={showRewriteModal}
+        onClose={() => setShowRewriteModal(false)}
+        originalMessage={messageInput}
+        onApply={(rewritten) => {
+          setMessageInput(rewritten)
+          setShowRewriteModal(false)
+        }}
+      />
     </div>
   )
 }

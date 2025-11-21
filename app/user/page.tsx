@@ -8,6 +8,7 @@ import Sidebar from '../../components/Sidebar'
 import ConversationWindow from '../../components/ConversationWindow'
 import ChatList from '@/components/ChatList'
 import { User, Message, Chat } from '@/types'
+import { themeClasses, themeStyles, componentStyles } from '@/utils/theme'
 
 export default function UserChatPage() {
   const router = useRouter()
@@ -400,7 +401,7 @@ export default function UserChatPage() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className={`flex h-screen ${themeClasses.bgPrimary}`}>
       <Sidebar user={user} onLogout={handleLogout} currentPage="chats" />
 
       <ChatList

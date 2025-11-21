@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getUserInitials, getFullName } from '../utils/userUtils'
 import { User } from '../types'
+import { themeClasses, themeStyles, componentStyles } from '../utils/theme'
 
 interface SidebarProps {
   user: User
@@ -17,9 +18,9 @@ export default function Sidebar({ user, onLogout, currentPage = 'chats' }: Sideb
 
   return (
     <div
-      className={`relative bg-gray-800 text-white transition-all duration-300 ${
+      className={`relative transition-all duration-300 ${
         expanded ? 'w-64' : 'w-16'
-      }`}
+      } ${themeClasses.bgPrimary} ${themeClasses.textPrimary}`}
       onMouseEnter={() => setExpanded(true)}
       onMouseLeave={() => setExpanded(false)}
     >
@@ -34,18 +35,18 @@ export default function Sidebar({ user, onLogout, currentPage = 'chats' }: Sideb
                 className="w-10 h-10 rounded-full flex-shrink-0 object-cover"
               />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-                <span className="text-lg font-semibold">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${themeClasses.bgAccent}`}>
+                <span className="text-lg font-semibold text-white">
                   {getUserInitials(user.firstName, user.lastName)}
                 </span>
               </div>
             )}
             {expanded && (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">
+                <p className={`text-sm font-medium truncate ${themeClasses.textPrimary}`}>
                   {getFullName(user.firstName, user.lastName)}
                 </p>
-                <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                <p className={`text-xs truncate ${themeClasses.textSecondary}`}>{user.email}</p>
               </div>
             )}
           </div>
@@ -112,10 +113,10 @@ export default function Sidebar({ user, onLogout, currentPage = 'chats' }: Sideb
         </nav>
 
         {/* Logout */}
-        <div className="px-2 pt-4 border-t border-gray-700">
+        <div className={`px-2 pt-4 border-t ${themeClasses.borderAccent}`}>
           <button
             onClick={onLogout}
-            className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-700 transition"
+            className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition ${themeClasses.textPrimary} hover:opacity-80`}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -140,9 +141,18 @@ function SidebarItem({ icon, label, expanded, active, onClick }: SidebarItemProp
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition ${
-        active ? 'bg-gray-700' : 'hover:bg-gray-700'
-      }`}
+      className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition ${themeClasses.textPrimary}`}
+      style={active ? componentStyles.sidebarItem.active : {}}
+      onMouseEnter={(e) => {
+        if (!active) {
+          e.currentTarget.style.backgroundColor = componentStyles.sidebarItem.hover.backgroundColor
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!active) {
+          e.currentTarget.style.backgroundColor = 'transparent'
+        }
+      }}
     >
       <div className="flex-shrink-0">{icon}</div>
       {expanded && <span className="text-sm">{label}</span>}
