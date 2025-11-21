@@ -137,7 +137,7 @@ export default function ChatList({
                     ) : (() => {
                       const otherUser = chat.participants.find(p => p._id !== currentUserId)
                       return otherUser?.profilePicture ? (
-                        <img 
+                        <img
                           src={otherUser.profilePicture} 
                           alt={getChatDisplayName(chat)}
                           className="w-12 h-12 rounded-full object-cover"

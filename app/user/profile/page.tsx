@@ -6,6 +6,7 @@ import axios from 'axios'
 import Sidebar from '../../../components/Sidebar'
 import { User } from '../../../types'
 import { getUserInitials, getFullName } from '@/utils/userUtils'
+import Image from 'next/image'
 
 interface UserProfile {
   _id: string
@@ -26,6 +27,8 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [isUploadingPicture, setIsUploadingPicture] = useState(false)
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
   
   // Form state
   const [formData, setFormData] = useState({
@@ -67,7 +70,7 @@ export default function ProfilePage() {
 
   // Fetch user profile
   useEffect(() => {
-    if (!user) return
+    if (!user?.id) return
 
     const fetchProfile = async () => {
       try {
@@ -76,13 +79,27 @@ export default function ProfilePage() {
           headers: { Authorization: `Bearer ${token}` },
         })
         setProfile(response.data)
+        
+        // Only update user if profilePicture changed or is missing
+        if (response.data.profilePicture !== user.profilePicture) {
+          const updatedUser: User = {
+            id: user.id,
+            firstName: response.data.firstName || user.firstName,
+            lastName: response.data.lastName || user.lastName,
+            email: response.data.email || user.email,
+            role: user.role,
+            profilePicture: response.data.profilePicture || user.profilePicture,
+          }
+          localStorage.setItem('user', JSON.stringify(updatedUser))
+          setUser(updatedUser)
+        }
       } catch (error) {
         console.error('Error fetching profile:', error)
       }
     }
 
     fetchProfile()
-  }, [user])
+  }, [user?.id])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -125,6 +142,7 @@ export default function ProfilePage() {
           lastName: response.data.lastName,
           email: response.data.email,
           role: user.role,
+          profilePicture: response.data.profilePicture,
         }
         localStorage.setItem('user', JSON.stringify(updatedUser))
         setUser(updatedUser)
@@ -247,6 +265,138 @@ export default function ProfilePage() {
     )
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file')
+      return
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size must be less than 5MB')
+      return
+    }
+
+    // Create preview
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setPreviewImage(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleUploadProfilePicture = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setSuccess('')
+    
+    const fileInput = document.getElementById('profilePictureInput') as HTMLInputElement
+    const file = fileInput?.files?.[0]
+    
+    if (!file) {
+      setError('Please select an image file')
+      return
+    }
+
+    setIsUploadingPicture(true)
+
+    try {
+      const token = localStorage.getItem('token')
+      const formData = new FormData()
+      formData.append('profilePicture', file)
+
+      const response = await axios.post(
+        'http://localhost:5000/api/users/profile-picture',
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      )
+
+      // Update localStorage with new user data
+      const updatedUser: User = {
+        id: user!.id,
+        firstName: response.data.firstName,
+        lastName: response.data.lastName,
+        email: response.data.email,
+        role: user!.role,
+        profilePicture: response.data.profilePicture,
+      }
+      localStorage.setItem('user', JSON.stringify(updatedUser))
+      setUser(updatedUser)
+      setProfile(response.data)
+      setPreviewImage(null)
+      setSuccess('Profile picture updated successfully!')
+      
+      setTimeout(() => setSuccess(''), 3000)
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data?.message || 'Failed to upload profile picture')
+      } else {
+        setError('Failed to upload profile picture')
+      }
+    } finally {
+      setIsUploadingPicture(false)
+      // Reset file input
+      if (fileInput) {
+        fileInput.value = ''
+      }
+    }
+  }
+
+  const handleDeleteProfilePicture = async () => {
+    if (!user?.profilePicture) return
+
+    if (!confirm('Are you sure you want to remove your profile picture?')) {
+      return
+    }
+
+    setIsLoading(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const token = localStorage.getItem('token')
+      const response = await axios.delete(
+        'http://localhost:5000/api/users/profile-picture',
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
+
+      // Update localStorage and state
+      const updatedUser: User = {
+        id: user.id,
+        firstName: response.data.firstName,
+        lastName: response.data.lastName,
+        email: response.data.email,
+        role: user.role,
+        profilePicture: undefined, // Remove profilePicture
+      }
+      localStorage.setItem('user', JSON.stringify(updatedUser))
+      setUser(updatedUser)
+      setProfile(response.data)
+      setSuccess('Profile picture removed successfully!')
+      
+      setTimeout(() => setSuccess(''), 3000)
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data?.message || 'Failed to remove profile picture')
+      } else {
+        setError('Failed to remove profile picture')
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="flex h-screen bg-gray-100">
       <Sidebar user={user} onLogout={handleLogout} currentPage="profile" />
@@ -273,6 +423,91 @@ export default function ProfilePage() {
         )}
 
         <div className="flex-1 p-6 space-y-6">
+          {/* Profile Picture Card */}
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold text-gray-900">Profile Picture</h2>
+              {user?.profilePicture && !previewImage && (
+                <button
+                  onClick={handleDeleteProfilePicture}
+                  disabled={isLoading}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  Remove Picture
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center space-x-6">
+              <div className="relative">
+                {previewImage ? (
+                  <img
+                    src={previewImage}
+                    alt="Preview"
+                    className="w-32 h-32 rounded-full object-cover border-4 border-blue-500"
+                  />
+                ) : user?.profilePicture ? (
+                  <img
+                    src={user.profilePicture}
+                    alt={getFullName(user.firstName, user.lastName)}
+                    className="w-32 h-32 rounded-full object-cover border-4 border-blue-500"
+                  />
+                ) : (
+                  <div className="w-32 h-32 rounded-full bg-blue-500 flex items-center justify-center border-4 border-blue-500">
+                    <span className="text-5xl font-semibold text-white">
+                      {getUserInitials(user!.firstName, user!.lastName)}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-1">
+                <form onSubmit={handleUploadProfilePicture} className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="profilePictureInput"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Choose a new profile picture
+                    </label>
+                    <input
+                      id="profilePictureInput"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">
+                      JPG, PNG, GIF or WEBP. Max size: 5MB
+                    </p>
+                  </div>
+
+                  {previewImage && (
+                    <div className="flex space-x-3">
+                      <button
+                        type="submit"
+                        disabled={isUploadingPicture}
+                        className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isUploadingPicture ? 'Uploading...' : 'Upload Picture'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPreviewImage(null)
+                          const fileInput = document.getElementById('profilePictureInput') as HTMLInputElement
+                          if (fileInput) fileInput.value = ''
+                        }}
+                        className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                </form>
+              </div>
+            </div>
+          </div>
           {/* Profile Information Card */}
           <div className="bg-white border border-gray-200 rounded-lg p-6">
             <div className="flex items-center justify-between mb-6">

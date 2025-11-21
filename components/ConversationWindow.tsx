@@ -189,7 +189,7 @@ export default function ConversationWindow({
                 <span className="text-white font-semibold">{displayAvatar}</span>
               </div>
             ) : otherUser.profilePicture ? (
-              <img 
+              <img
                 src={otherUser.profilePicture} 
                 alt={displayName}
                 className="w-10 h-10 rounded-full object-cover"
@@ -250,6 +250,19 @@ export default function ConversationWindow({
           const senderDisplayName = getSenderDisplayName()
           const senderInitial = senderDisplayName.charAt(0).toUpperCase()
 
+          const getSenderParticipant = () => {
+            if (selectedChat && isGroupChat) {
+              return selectedChat.participants.find(p => p._id === message.sender)
+            }
+            return null
+          }
+
+          const senderParticipant = getSenderParticipant()
+          const senderProfilePicture = senderParticipant?.profilePicture
+          const senderInitials = senderParticipant 
+            ? getUserInitials(senderParticipant.firstName, senderParticipant.lastName)
+            : senderInitial
+
           return (
             <React.Fragment key={message._id || `temp-${index}`}>
               {showDateSeparator && (
@@ -265,18 +278,27 @@ export default function ConversationWindow({
                 }`}
               >
                 {/* Show avatar for group chats when sender changes */}
-                {isGroupChat && !isOwn && (
+                {isGroupChat && !isOwn && (!previousMessageSameSender || showDateSeparator) && (
                   <div className="mr-2 flex-shrink-0">
-                    {(!previousMessageSameSender || showDateSeparator) && (
+                    <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center">
+                    {senderProfilePicture ? (
+                      <img
+                        src={senderProfilePicture}
+                        alt={senderDisplayName}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
                       <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center">
                         <span className="text-white text-xs font-semibold">
-                          {senderInitial}
+                          {senderInitials}
                         </span>
                       </div>
                     )}
+                    </div>
                   </div>
                 )}
-                <div className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
+                <div className={`flex flex-col ${isOwn ? 'items-end' : `items-start ${isGroupChat && previousMessageSameSender && !showDateSeparator ? 'ml-10' : ''}`}`}>
+
                   {/* Show sender name for group chats */}
                   {showSenderName && (!previousMessageSameSender || showDateSeparator) && (
                     <p className="text-xs font-medium text-gray-600 mb-1 px-1">
