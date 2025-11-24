@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import axios from 'axios'
+import { themeClasses } from '@/utils/theme'
 
 export default function SignupPage() {
   const [firstName, setFirstName] = useState('')
@@ -60,11 +61,11 @@ export default function SignupPage() {
   
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-sm p-6 bg-white rounded-2xl shadow-sm">
-        <div className="text-center mb-6">
+    <div className={`flex min-h-screen items-center justify-center ${themeClasses.bgPrimary}`}>
+      <div className={`w-full max-w-sm p-8 rounded-lg ${themeClasses.bgSecondary} ${themeClasses.borderPrimary} border shadow-lg`}>
+        <div className="text-center mb-8">
           {/* Logo or Icon */}
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-500">
+          <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg ${themeClasses.bgAccent}`}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="white"
@@ -81,8 +82,8 @@ export default function SignupPage() {
             </svg>
           </div>
 
-          <h1 className="text-3xl font-bold text-gray-900">ChatterBox</h1>
-          <p className="mt-2 text-gray-600 font-medium">
+          <h1 className={`text-3xl font-bold ${themeClasses.textPrimary}`}>ChatterBox</h1>
+          <p className={`mt-2 ${themeClasses.textSecondary} font-medium`}>
             Create your account
           </p>
         </div>
@@ -101,7 +102,7 @@ export default function SignupPage() {
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               required
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full rounded-lg ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border px-4 py-2.5 ${themeClasses.textPrimary} placeholder-[#8E9398] focus:outline-none focus:ring-2 focus:ring-[#2FB8A8] focus:border-transparent`}
             />
           </div>
 
@@ -112,7 +113,7 @@ export default function SignupPage() {
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               required
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full rounded-lg ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border px-4 py-2.5 ${themeClasses.textPrimary} placeholder-[#8E9398] focus:outline-none focus:ring-2 focus:ring-[#2FB8A8] focus:border-transparent`}
             />
           </div>
 
@@ -123,7 +124,7 @@ export default function SignupPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full rounded-lg ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border px-4 py-2.5 ${themeClasses.textPrimary} placeholder-[#8E9398] focus:outline-none focus:ring-2 focus:ring-[#2FB8A8] focus:border-transparent`}
             />
           </div>
 
@@ -135,12 +136,12 @@ export default function SignupPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full rounded-lg ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border px-4 py-2.5 ${themeClasses.textPrimary} placeholder-[#8E9398] focus:outline-none focus:ring-2 focus:ring-[#2FB8A8] focus:border-transparent`}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium ${themeClasses.textSecondary} mb-2`}>
               Account Type
             </label>
             <div className="flex gap-4">
@@ -151,9 +152,9 @@ export default function SignupPage() {
                   value="user"
                   checked={role === 'user'}
                   onChange={(e) => setRole(e.target.value as 'user' | 'admin')}
-                  className="mr-2"
+                  className="mr-2 accent-[#2FB8A8]"
                 />
-                <span className="text-sm text-gray-700">User</span>
+                <span className={`text-sm ${themeClasses.textPrimary}`}>User</span>
               </label>
               <label className="flex items-center">
                 <input
@@ -162,9 +163,9 @@ export default function SignupPage() {
                   value="admin"
                   checked={role === 'admin'}
                   onChange={(e) => setRole(e.target.value as 'user' | 'admin')}
-                  className="mr-2"
+                  className="mr-2 accent-[#2FB8A8]"
                 />
-                <span className="text-sm text-gray-700">Admin</span>
+                <span className={`text-sm ${themeClasses.textPrimary}`}>Admin</span>
               </label>
             </div>
           </div>
@@ -177,7 +178,7 @@ export default function SignupPage() {
                 value={adminCode}
                 onChange={(e) => setAdminCode(e.target.value)}
                 required
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full rounded-lg ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border px-4 py-2.5 ${themeClasses.textPrimary} placeholder-[#8E9398] focus:outline-none focus:ring-2 focus:ring-[#2FB8A8] focus:border-transparent`}
               />
             </div>
           )}
@@ -191,9 +192,9 @@ export default function SignupPage() {
           </button>
         </form>
 
-        <p className="mt-4 text-center text-sm text-gray-700">
+        <p className={`mt-6 text-center text-sm ${themeClasses.textSecondary}`}>
           Already have an account?{' '}
-          <Link href="/login" className="font-semibold text-green-600 hover:underline">
+          <Link href="/login" className={`font-semibold ${themeClasses.textAccent} hover:underline`}>
             Log in
           </Link>
         </p>

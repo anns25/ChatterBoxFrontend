@@ -404,13 +404,16 @@ export default function UserChatPage() {
     <div className={`flex h-screen ${themeClasses.bgPrimary}`}>
       <Sidebar user={user} onLogout={handleLogout} currentPage="chats" />
 
-      <ChatList
-        chats={chats}
-        selectedChat={selectedChat}
-        currentUserId={user.id}
-        onChatSelect={handleChatSelect}
-        onlineUsers={onlineUsers}
-      />
+      {/* ChatList - hidden on mobile when chat is selected, visible otherwise */}
+      <div className={`${selectedChat ? 'hidden md:block' : 'block'} w-full md:w-80 flex flex-col ${themeClasses.bgPrimary} ${themeClasses.borderPrimary} border-r`}>
+        <ChatList
+          chats={chats}
+          selectedChat={selectedChat}
+          currentUserId={user.id}
+          onChatSelect={handleChatSelect}
+          onlineUsers={onlineUsers}
+        />
+      </div>
 
       <ConversationWindow
         selectedChat={selectedChat}
@@ -422,6 +425,7 @@ export default function UserChatPage() {
         onTyping={handleTyping}
         isTyping={isTyping}
         onlineUsers={onlineUsers}
+        onBack={() => setSelectedChat(null)}
       />
     </div>
   )

@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import axios from 'axios'
+import { themeClasses } from '@/utils/theme'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -43,11 +44,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-sm p-6 bg-white rounded-2xl shadow-sm">
-        <div className="text-center mb-6">
+    <div className={`flex min-h-screen items-center justify-center ${themeClasses.bgPrimary}`}>
+      <div className={`w-full max-w-sm p-8 rounded-lg ${themeClasses.bgSecondary} ${themeClasses.borderPrimary} border shadow-lg`}>
+        <div className="text-center mb-8">
           {/* Logo or Icon */}
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-500">
+          <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg ${themeClasses.bgAccent}`}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="white"
@@ -64,8 +65,8 @@ export default function LoginPage() {
             </svg>
           </div>
 
-          <h1 className="text-3xl font-bold text-gray-900">ChatterBox</h1>
-          <p className="mt-2 text-gray-600 font-medium">
+          <h1 className={`text-3xl font-bold ${themeClasses.textPrimary}`}>ChatterBox</h1>
+          <p className={`mt-2 ${themeClasses.textSecondary} font-medium`}>
             Login to your account
           </p>
         </div>
@@ -78,7 +79,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full rounded-lg ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border px-4 py-2.5 ${themeClasses.textPrimary} placeholder-[#8E9398] focus:outline-none focus:ring-2 focus:ring-[#2FB8A8] focus:border-transparent`}
             />
           </div>
 
@@ -89,14 +90,14 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full rounded-lg ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border px-4 py-2.5 ${themeClasses.textPrimary} placeholder-[#8E9398] focus:outline-none focus:ring-2 focus:ring-[#2FB8A8] focus:border-transparent`}
             />
           </div>
 
           <div className="text-right">
             <Link
               href="#"
-              className="text-sm font-medium text-gray-600 hover:text-blue-600"
+              className={`text-sm font-medium ${themeClasses.textSecondary} hover:${themeClasses.textAccent} transition`}
             >
               Forgot password?
             </Link>
@@ -104,15 +105,16 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full rounded-lg bg-blue-500 py-2 font-semibold text-white hover:bg-blue-600 transition"
+            disabled={isLoading}
+            className={`w-full rounded-lg py-2.5 font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed ${themeClasses.btnPrimary}`}
           >
-            Log In
+            {isLoading ? 'Logging in...' : 'Log In'}
           </button>
         </form>
 
-        <p className="mt-4 text-center text-sm text-gray-700">
-          Don’t have an account?{' '}
-          <Link href="/signup" className="font-semibold text-green-600 hover:underline">
+        <p className={`mt-6 text-center text-sm ${themeClasses.textSecondary}`}>
+          Don't have an account?{' '}
+          <Link href="/signup" className={`font-semibold ${themeClasses.textAccent} hover:underline`}>
             Sign up
           </Link>
         </p>

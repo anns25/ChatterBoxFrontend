@@ -90,7 +90,7 @@ export default function ChatList({
   }
 
   return (
-    <div className={`w-80 flex flex-col ${themeClasses.bgPrimary} ${themeClasses.borderPrimary} border-r`}>
+    <>
       <div className={`p-4 border-b ${themeClasses.borderPrimary}`}>
         <h2 className={`text-xl font-semibold ${themeClasses.textPrimary}`}>Chats</h2>
       </div>
@@ -211,6 +211,6 @@ export default function ChatList({
           })
         )}
       </div>
-    </div>
+    </>
   )
 }

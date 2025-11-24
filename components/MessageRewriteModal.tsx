@@ -203,7 +203,7 @@ export default function MessageRewriteModal({
         {rewrittenMessage && (
           <div className="mb-4">
             <p className={`text-sm mb-2 ${themeClasses.textSecondary}`}>Rewritten:</p>
-            <div className={`p-3 rounded-lg border ${themeClasses.borderAccent}`} style={{ backgroundColor: '#2FB8A8', opacity: 0.1 }}>
+            <div className={`p-3 rounded-lg border ${themeClasses.borderAccent}`} style={{ backgroundColor: '#2FB8A8', opacity: 1 }}>
               <p className={`text-sm ${themeClasses.textPrimary}`}>{rewrittenMessage}</p>
             </div>
           </div>
