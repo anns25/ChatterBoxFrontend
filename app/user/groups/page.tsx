@@ -719,8 +719,8 @@ export default function GroupsPage() {
             </div>
           ) : adminGroups.length === 0 ? (
             <div className={`text-center py-8 ${themeClasses.textSecondary}`}>
-              <p className="text-lg mb-2">You haven&apost created any groups yet.</p>
-              <p className="text-sm">Click &quotCreate Group&quot to get started!</p>
+              <p className="text-lg mb-2">You haven&apos;created any groups yet.</p>
+              <p className="text-sm">Click &quot;Create Group&quot; to get started!</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
