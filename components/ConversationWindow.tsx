@@ -5,6 +5,7 @@ import { Message, Chat } from '@/types'
 import { getUserInitials, getFullName } from '../utils/userUtils'
 import MessageRewriteModal from './MessageRewriteModal'
 import { themeClasses, themeStyles, componentStyles } from '../utils/theme'
+import axios from 'axios'
 
 interface ConversationWindowProps {
   selectedChat: Chat | null
@@ -17,6 +18,10 @@ interface ConversationWindowProps {
   isTyping: boolean
   onlineUsers: Set<string>
   onBack?: () => void
+}
+
+interface FormErrors {
+  groupName?: string
 }
 
 export default function ConversationWindow({
@@ -33,6 +38,16 @@ export default function ConversationWindow({
 }: ConversationWindowProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [showRewriteModal, setShowRewriteModal] = useState(false)
+  const [showEditGroupModal, setShowEditGroupModal] = useState(false)
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [isEditingPicture, setIsEditingPicture] = useState(false)
+  const [newGroupName, setNewGroupName] = useState('')
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [errors, setErrors] = useState<FormErrors>({})
+
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -172,6 +187,7 @@ export default function ConversationWindow({
 
   const otherUser = getOtherParticipant(selectedChat)
   const isGroupChat = selectedChat.isGroupChat
+  const isAdmin = isGroupChat && selectedChat.admin?._id === currentUserId
   const isOnline = !isGroupChat && isUserOnline(otherUser._id)
   const displayName = isGroupChat 
     ? (selectedChat.groupName || 'Group Chat') 
@@ -183,10 +199,173 @@ export default function ConversationWindow({
         ? null 
         : getUserInitials(otherUser.firstName, otherUser.lastName))
 
+  // Validation function
+  const validateGroupName = (value: string): string | undefined => {
+    const trimmed = value.trim()
+    if (!trimmed) {
+      return 'Group name is required'
+    }
+    return undefined
+  }
+
+  const validateForm = (): boolean => {
+    const error = validateGroupName(newGroupName)
+    setErrors({ groupName: error })
+    return !error
+  }
+
+  const handleEditGroupName = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedChat) return
+
+    setError('')
+
+    // Validate form before submission
+    if (!validateForm()) {
+      return
+    }
+
+    setIsUploading(true)
+
+    try {
+      const token = localStorage.getItem('token')
+      const response = await axios.patch(
+        `http://localhost:5000/api/chats/group/${selectedChat._id}/name`,
+        { groupName: newGroupName.trim() },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+
+      setSuccess('Group name updated successfully!')
+      setIsEditingName(false)
+      setNewGroupName('')
+      setErrors({})
+      
+      setTimeout(() => {
+        setSuccess('')
+        window.location.reload()
+      }, 2000)
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || 'Failed to update group name')
+      } else {
+        setError('Failed to update group name')
+      }
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file')
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size must be less than 5MB')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setPreviewImage(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleUploadGroupPicture = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedChat) return
+
+    const fileInput = document.getElementById('groupPictureInput') as HTMLInputElement
+    const file = fileInput?.files?.[0]
+    
+    if (!file) {
+      setError('Please select an image file')
+      return
+    }
+
+    setError('')
+    setIsUploading(true)
+
+    try {
+      const token = localStorage.getItem('token')
+      const formData = new FormData()
+      formData.append('groupPicture', file)
+
+      const response = await axios.patch (
+        `http://localhost:5000/api/chats/group/${selectedChat._id}/picture`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      )
+
+      setSuccess('Group picture updated successfully!')
+      setPreviewImage(null)
+      setIsEditingPicture(false)
+      if (fileInput) fileInput.value = ''
+      
+      setTimeout(() => {
+        setSuccess('')
+        window.location.reload()
+      }, 2000)
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || 'Failed to upload group picture')
+      } else {
+        setError('Failed to upload group picture')
+      }
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const handleDeleteGroupPicture = async () => {
+    if (!selectedChat) return
+
+    if (!confirm('Are you sure you want to remove the group picture?')) {
+      return
+    }
+
+    setError('')
+    setIsUploading(true)
+
+    try {
+      const token = localStorage.getItem('token')
+      await axios.delete(
+        `http://localhost:5000/api/chats/group/${selectedChat._id}/picture`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+
+      setSuccess('Group picture removed successfully!')
+      setIsEditingPicture(false)
+      
+      setTimeout(() => {
+        setSuccess('')
+        window.location.reload()
+      }, 2000)
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || 'Failed to remove group picture')
+      } else {
+        setError('Failed to remove group picture')
+      }
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
   return (
-    <div className={`flex-1 flex flex-col ${themeClasses.bgPrimary}`}>
+    <div className={`flex-1 flex flex-col min-h-0 ${themeClasses.bgPrimary}`}>
       {/* Header */}
-      <div className={`p-4 border-b flex items-center justify-between ${themeClasses.borderPrimary}`}>
+      <div className={`p-4 border-b flex items-center justify-between flex-shrink-0 ${themeClasses.borderPrimary}`}>
         <div className="flex items-center space-x-3">
           {/* Back button for mobile */}
           {onBack && (
@@ -212,9 +391,17 @@ export default function ConversationWindow({
           <div className="flex items-center space-x-3">
             <div className="relative">
               {isGroupChat ? (
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${themeClasses.bgAccent}`}>
-                  <span className="text-white font-semibold">{displayAvatar}</span>
-                </div>
+                selectedChat.groupPicture ? (
+                  <img
+                    src={selectedChat.groupPicture}
+                    alt={selectedChat.groupName || 'Group'}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${themeClasses.bgAccent}`}>
+                    <span className="text-white font-semibold">{displayAvatar}</span>
+                  </div>
+                )
               ) : otherUser.profilePicture ? (
                 <img
                   src={otherUser.profilePicture} 
@@ -241,10 +428,238 @@ export default function ConversationWindow({
             </div>
           </div>
         </div>
+        
+        {/* Admin Edit Button */}
+        {isAdmin && (
+          <button
+            onClick={() => setShowEditGroupModal(true)}
+            className={`p-2 rounded-lg hover:${themeClasses.bgTertiary} transition ${themeClasses.textPrimary}`}
+            title="Edit group settings"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+          </button>
+        )}
       </div>
 
+      {/* Success/Error Messages */}
+      {(success || error) && (
+        <div className={`p-3 mx-4 mt-2 rounded-lg text-sm ${
+          success ? 'bg-green-900 text-green-200' : 'bg-red-900 text-red-200'
+        }`}>
+          {success || error}
+        </div>
+      )}
+
+      {/* Edit Group Modal */}
+      {showEditGroupModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className={`rounded-lg p-6 max-w-md w-full mx-4 ${themeClasses.bgSecondary} ${themeClasses.borderPrimary} border`}>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className={`text-xl font-semibold ${themeClasses.textPrimary}`}>Edit Group</h2>
+              <button
+                onClick={() => {
+                  setShowEditGroupModal(false)
+                  setIsEditingName(false)
+                  setIsEditingPicture(false)
+                  setNewGroupName('')
+                  setPreviewImage(null)
+                  setError('')
+                }}
+                className={themeClasses.textSecondary}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Edit Group Name */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <label className={`text-sm font-medium ${themeClasses.textSecondary}`}>Group Name</label>
+                {!isEditingName && (
+                  <button
+                    onClick={() => {
+                      setIsEditingName(true)
+                      setNewGroupName(selectedChat?.groupName || '')
+                      setError('')
+                    }}
+                    className={`text-xs ${themeClasses.textAccent} hover:underline`}
+                  >
+                    Edit
+                  </button>
+                )}
+              </div>
+              {isEditingName ? (
+                <form onSubmit={handleEditGroupName} className="space-y-2">
+                  <input
+                    type="text"
+                    value={newGroupName}
+                    onChange={(e) => {
+                      setNewGroupName(e.target.value)
+                      if (errors.groupName) {
+                        const error = validateGroupName(e.target.value)
+                        setErrors({ groupName: error })
+                      }
+                    }}
+                    onBlur={(e) => {
+                      const error = validateGroupName(e.target.value)
+                      setErrors({ groupName: error })
+                    }}
+                    className={`w-full px-4 py-2 ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border rounded-lg focus:outline-none focus:ring-2 ${themeClasses.textPrimary} focus:${themeClasses.borderAccent} ${
+                      errors.groupName ? 'border-red-500 focus:ring-red-500' : ''
+                    }`}
+                    autoFocus
+                  />
+                  {errors.groupName && (
+                    <p className="text-sm text-red-600">{errors.groupName}</p>
+                  )}
+                  <div className="flex space-x-2">
+                    <button
+                      type="submit"
+                      disabled={isUploading || !newGroupName.trim()}
+                      className={`px-4 py-2 ${themeClasses.btnPrimary} rounded-lg transition font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm`}
+                    >
+                      {isUploading ? 'Saving...' : 'Save'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditingName(false)
+                        setNewGroupName('')
+                        setError('')
+                      }}
+                      className={`px-4 py-2 ${themeClasses.btnSecondary} rounded-lg transition font-medium text-sm`}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <p className={`${themeClasses.textPrimary}`}>{selectedChat?.groupName || 'No name'}</p>
+              )}
+            </div>
+
+            {/* Edit Group Picture */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className={`text-sm font-medium ${themeClasses.textSecondary}`}>Group Picture</label>
+                {!isEditingPicture && selectedChat?.groupPicture && (
+                  <button
+                    onClick={handleDeleteGroupPicture}
+                    disabled={isUploading}
+                    className={`text-xs text-red-400 hover:underline disabled:opacity-50`}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              {isEditingPicture ? (
+                <form onSubmit={handleUploadGroupPicture} className="space-y-3">
+                  <div className="flex justify-center mb-3">
+                    {previewImage ? (
+                      <img
+                        src={previewImage}
+                        alt="Preview"
+                        className="w-32 h-32 rounded-full object-cover border-4"
+                        style={{ borderColor: '#2FB8A8' }}
+                      />
+                    ) : selectedChat?.groupPicture ? (
+                      <img
+                        src={selectedChat.groupPicture}
+                        alt={selectedChat.groupName || 'Group'}
+                        className="w-32 h-32 rounded-full object-cover border-4"
+                        style={{ borderColor: '#2FB8A8' }}
+                      />
+                    ) : (
+                      <div className={`w-32 h-32 rounded-full flex items-center justify-center ${themeClasses.bgAccent} border-4`} style={{ borderColor: '#2FB8A8' }}>
+                        <span className="text-4xl font-semibold text-white">
+                          {selectedChat?.groupName?.charAt(0).toUpperCase() || 'G'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <input
+                    id="groupPictureInput"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className={`block w-full text-sm ${themeClasses.textSecondary} file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold ${themeClasses.bgTertiary} ${themeClasses.textAccent} hover:opacity-80`}
+                  />
+                  <p className={`text-xs ${themeClasses.textMuted}`}>
+                    JPG, PNG, GIF or WEBP. Max size: 5MB
+                  </p>
+                  {previewImage && (
+                    <div className="flex space-x-2">
+                      <button
+                        type="submit"
+                        disabled={isUploading}
+                        className={`px-4 py-2 ${themeClasses.btnPrimary} rounded-lg transition font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm`}
+                      >
+                        {isUploading ? 'Uploading...' : 'Upload'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPreviewImage(null)
+                          const fileInput = document.getElementById('groupPictureInput') as HTMLInputElement
+                          if (fileInput) fileInput.value = ''
+                        }}
+                        className={`px-4 py-2 ${themeClasses.btnSecondary} rounded-lg transition font-medium text-sm`}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                </form>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex justify-center">
+                    {selectedChat?.groupPicture ? (
+                      <img
+                        src={selectedChat.groupPicture}
+                        alt={selectedChat.groupName || 'Group'}
+                        className="w-24 h-24 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className={`w-24 h-24 rounded-full flex items-center justify-center ${themeClasses.bgAccent}`}>
+                        <span className="text-3xl font-semibold text-white">
+                          {selectedChat?.groupName?.charAt(0).toUpperCase() || 'G'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setIsEditingPicture(true)}
+                    className={`w-full px-4 py-2 ${themeClasses.btnSecondary} rounded-lg transition font-medium text-sm`}
+                  >
+                    {selectedChat?.groupPicture ? 'Change Picture' : 'Add Picture'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+      <div className="flex-1 overflow-y-auto p-4 space-y-2 min-h-0">
         {messages.map((message, index) => {
           const isOwn = message.sender === currentUserId
           const previousMessage = index > 0 ? messages[index - 1] : undefined
@@ -368,7 +783,7 @@ export default function ConversationWindow({
       </div>
 
       {/* Message Input */}
-      <form onSubmit={onSendMessage} className={`p-4 border-t ${themeClasses.borderPrimary}`}>
+      <form onSubmit={onSendMessage} className={`p-4 border-t flex-shrink-0 ${themeClasses.borderPrimary}`}>
         <div className="flex space-x-2">
           {messageInput.trim() && (
             <button

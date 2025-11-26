@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { themeClasses, themeStyles, componentStyles } from '../utils/theme'
 
@@ -105,6 +105,15 @@ export default function MessageRewriteModal({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
+   // Clear previous rewrite message when modal opens
+   useEffect(() => {
+    if (isOpen) {
+      setRewrittenMessage('')
+      setSelectedType(null)
+      setError('')
+    }
+  }, [isOpen])
+
   if (!isOpen) return null
 
   const handleRewrite = async () => {
@@ -171,7 +180,7 @@ export default function MessageRewriteModal({
           <div className="space-y-4">
             {Object.entries(REWRITE_CATEGORIES).map(([category, subcategories]) => (
               <div key={category}>
-                <p className="text-xs font-semibold text-gray-500 mb-2">{category}</p>
+                <p className={`text-xs font-semibold ${themeClasses.textMuted} mb-2`}>{category}</p>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {Object.entries(subcategories).flatMap(([subcat, types]) =>
                     types.map((type) => (
@@ -180,8 +189,8 @@ export default function MessageRewriteModal({
                         onClick={() => setSelectedType(type)}
                         className={`px-3 py-2 text-xs rounded-lg border transition ${
                           selectedType === type
-                            ? 'bg-blue-500 text-white border-blue-500'
-                            : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300'
+                            ? `${themeClasses.bgAccent} ${themeClasses.textPrimary} ${themeClasses.borderAccent}`
+                            : `${themeClasses.bgTertiary} ${themeClasses.textPrimary} ${themeClasses.borderSecondary} hover:${themeClasses.borderAccent}`
                         }`}
                       >
                         {REWRITE_LABELS[type] || type}
@@ -195,7 +204,7 @@ export default function MessageRewriteModal({
         </div>
 
         {error && (
-          <div className={`mb-4 p-3 border rounded-lg text-sm ${themeClasses.borderPrimary} ${themeClasses.textPrimary}`} style={{ backgroundColor: '#EF4444', color: '#FFFFFF' }}>
+          <div className={`mb-4 p-3 border rounded-lg text-sm bg-red-900 border-red-700 text-red-200`}>
             {error}
           </div>
         )}
@@ -203,7 +212,7 @@ export default function MessageRewriteModal({
         {rewrittenMessage && (
           <div className="mb-4">
             <p className={`text-sm mb-2 ${themeClasses.textSecondary}`}>Rewritten:</p>
-            <div className={`p-3 rounded-lg border ${themeClasses.borderAccent}`} style={{ backgroundColor: '#2FB8A8', opacity: 1 }}>
+            <div className={`p-3 rounded-lg border ${themeClasses.bgAccent} ${themeClasses.borderAccent}`}>
               <p className={`text-sm ${themeClasses.textPrimary}`}>{rewrittenMessage}</p>
             </div>
           </div>
@@ -220,7 +229,7 @@ export default function MessageRewriteModal({
           {rewrittenMessage && (
             <button
               onClick={handleApply}
-              className="px-4 py-2 rounded-lg transition font-medium text-white" style={{ backgroundColor: '#10B981' }}
+              className="px-4 py-2 rounded-lg transition font-medium bg-green-600 text-white hover:bg-green-700"
             >
               Apply
             </button>

@@ -7,6 +7,7 @@ import { io, Socket } from 'socket.io-client'
 import Sidebar from '../../../components/Sidebar'
 import { User } from '../../../types'
 import { getFullName, getUserInitials } from '@/utils/userUtils'
+import { themeClasses } from '@/utils/theme'
 
 interface SearchResultUser {
   _id: string
@@ -187,46 +188,37 @@ export default function SearchPage() {
     }
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    if (socketRef.current) {
-      socketRef.current.disconnect()
-    }
-    router.push('/login')
-  }
-
   const isUserOnline = (userId: string) => {
     return onlineUsers.has(userId)
   }
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-gray-500">Loading...</div>
+      <div className={`flex items-center justify-center h-screen ${themeClasses.bgPrimary}`}>
+        <div className={themeClasses.textSecondary}>Loading...</div>
       </div>
     )
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar user={user} onLogout={handleLogout} currentPage="search" />
+    <div className={`flex h-screen ${themeClasses.bgPrimary}`}>
+      <Sidebar user={user} currentPage="search" />
 
-      <div className="flex-1 flex flex-col bg-white">
+      <div className={`flex-1 flex flex-col ${themeClasses.bgSecondary}`}>
         {/* Header */}
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-900">Search Users</h1>
-          <p className="text-sm text-gray-600 mt-1">
+        <div className={`p-6 border-b ${themeClasses.borderSecondary}`}>
+          <h1 className={`text-2xl font-bold ${themeClasses.textPrimary}`}>Search Users</h1>
+          <p className={`text-sm ${themeClasses.textSecondary} mt-1`}>
             Find and connect with other users
           </p>
         </div>
 
         {/* Search Input */}
-        <div className="p-6 border-b border-gray-200">
+        <div className={`p-6 border-b ${themeClasses.borderSecondary}`}>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <div className={`absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none`}>
               <svg
-                className="h-5 w-5 text-gray-400"
+                className={`h-5 w-5 ${themeClasses.textMuted}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -244,22 +236,22 @@ export default function SearchPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by name or email..."
-              className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`block w-full pl-10 pr-3 py-3 ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border rounded-lg focus:outline-none focus:ring-2 ${themeClasses.textPrimary} focus:${themeClasses.borderAccent} placeholder:${themeClasses.textMuted}`}
             />
             {isSearching && (
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+                <div className={`animate-spin rounded-full h-5 w-5 border-b-2 ${themeClasses.borderAccent}`}></div>
               </div>
             )}
           </div>
         </div>
 
-                {/* Search Results */}
-                <div className="flex-1 overflow-y-auto p-6">
+        {/* Search Results */}
+        <div className="flex-1 overflow-y-auto p-6">
           {searchResults.length === 0 && !isSearching ? (
             <div className="text-center py-12">
               <svg
-                className="mx-auto h-12 w-12 text-gray-400"
+                className={`mx-auto h-12 w-12 ${themeClasses.textMuted}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -271,8 +263,8 @@ export default function SearchPage() {
                   d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No users found</h3>
-              <p className="mt-1 text-sm text-gray-500">
+              <h3 className={`mt-2 text-sm font-medium ${themeClasses.textPrimary}`}>No users found</h3>
+              <p className={`mt-1 text-sm ${themeClasses.textMuted}`}>
                 {searchQuery.trim() 
                   ? 'Try searching with a different name or email'
                   : 'No users available'}
@@ -283,7 +275,7 @@ export default function SearchPage() {
               {searchResults.map((result) => (
                 <div
                   key={result._id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+                  className={`flex items-center justify-between p-4 ${themeClasses.bgTertiary} rounded-lg hover:${themeClasses.bgAccentHover} transition ${themeClasses.borderSecondary} border`}
                 >
                   <div className="flex items-center space-x-4">
                     <div className="relative">
@@ -294,21 +286,21 @@ export default function SearchPage() {
                           className="w-12 h-12 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center">
+                        <div className={`w-12 h-12 rounded-full ${themeClasses.bgAccent} flex items-center justify-center`}>
                           <span className="text-white font-semibold text-lg">
                             {getUserInitials(result.firstName, result.lastName)}
                           </span>
                         </div>
                       )}
                       {isUserOnline(result._id) && (
-                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                        <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2" style={{ backgroundColor: '#2FB8A8', borderColor: '#16181D' }}></div>
                       )}
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">{getFullName(result.firstName, result.lastName)}</p>
-                      <p className="text-sm text-gray-600">{result.email}</p>
+                      <p className={`font-semibold ${themeClasses.textPrimary}`}>{getFullName(result.firstName, result.lastName)}</p>
+                      <p className={`text-sm ${themeClasses.textSecondary}`}>{result.email}</p>
                       {result.role && (
-                        <span className="inline-block mt-1 px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+                        <span className={`inline-block mt-1 px-2 py-0.5 text-xs font-medium ${themeClasses.bgAccent} ${themeClasses.textPrimary} rounded`}>
                           {result.role}
                         </span>
                       )}
@@ -316,7 +308,7 @@ export default function SearchPage() {
                   </div>
                   <button
                     onClick={() => handleStartChat(result)}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition font-medium"
+                    className={`px-4 py-2 ${themeClasses.btnPrimary} rounded-lg transition font-medium`}
                   >
                     Start Chat
                   </button>

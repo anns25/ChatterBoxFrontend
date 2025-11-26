@@ -60,7 +60,10 @@ export default function ChatList({
 
   const getChatAvatar = (chat: Chat) => {
     if (chat.isGroupChat) {
-      // For group chats, show first letter of group name or a group icon
+      // For group chats, show group picture if available, otherwise first letter
+      if (chat.groupPicture) {
+        return null // Will render image instead
+      }
       const groupName = chat.groupName || 'Group'
       return groupName.charAt(0).toUpperCase()
     }
@@ -91,10 +94,10 @@ export default function ChatList({
 
   return (
     <>
-      <div className={`p-4 border-b ${themeClasses.borderPrimary}`}>
+      <div className={`p-4 border-b ${themeClasses.borderPrimary} flex-shrink-0`}>
         <h2 className={`text-xl font-semibold ${themeClasses.textPrimary}`}>Chats</h2>
       </div>
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto min-h-0">
         {chats.length === 0 ? (
           <div className={`p-4 text-center ${themeClasses.textSecondary}`}>
             <p>No chats yet. Start a conversation!</p>
@@ -112,30 +115,28 @@ export default function ChatList({
               <div
                 key={chat._id}
                 onClick={() => onChatSelect(chat)}
-                className={`p-4 border-b cursor-pointer transition ${
+                className={`p-4 border-b cursor-pointer transition overflow-visible ${
                   selectedChat?._id === chat._id 
                     ? themeClasses.bgAccent 
                     : `${themeClasses.bgPrimary} hover:opacity-90`
                 } ${themeClasses.borderPrimary}`}
               >
-                <div className="flex items-center space-x-3">
-                  <div className="relative">
+                <div className="flex items-center space-x-3 min-w-0">
+                  <div className="relative flex-shrink-0">
                     {chat.isGroupChat ? (
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${themeClasses.bgAccent}`}>
-                        <svg
-                          className="w-6 h-6 text-white"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                          />
-                        </svg>
-                      </div>
+                      chat.groupPicture ? (
+                        <img
+                          src={chat.groupPicture}
+                          alt={getChatDisplayName(chat)}
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${themeClasses.bgAccent}`}>
+                          <span className="text-white font-semibold">
+                            {getChatAvatar(chat)}
+                          </span>
+                        </div>
+                      )
                     ) : (() => {
                       const otherUser = chat.participants.find(p => p._id !== currentUserId)
                       return otherUser?.profilePicture ? (
@@ -156,26 +157,26 @@ export default function ChatList({
                       <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2" style={{ backgroundColor: '#2FB8A8', borderColor: '#16181D' }}></div>
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <p className={`text-sm font-semibold truncate ${
+                  <div className="flex-1 min-w-0 relative pr-20">
+                    <div className="flex items-center">
+                      <p className={`text-sm font-semibold truncate flex-1 min-w-0 ${
                         selectedChat?._id === chat._id 
                           ? 'text-white' 
                           : themeClasses.textPrimary
                       }`}>
                         {getChatDisplayName(chat)}
                       </p>
-                      <span className={`text-xs ml-2 flex-shrink-0 ${
-                        selectedChat?._id === chat._id 
-                          ? 'text-white opacity-90' 
-                          : themeClasses.textSecondary
-                      }`}>
-                        {formatTime(lastMessageTime)}
-                      </span>
                     </div>
-                    <div className="flex items-center justify-between mt-1">
+                    <span className={`absolute top-0 right-0 text-xs whitespace-nowrap ${
+                      selectedChat?._id === chat._id 
+                        ? 'text-white opacity-90' 
+                        : themeClasses.textSecondary
+                    }`} style={{ minWidth: 'max-content' }}>
+                      {formatTime(lastMessageTime)}
+                    </span>
+                    <div className="flex items-center mt-1 min-w-0">
                       {chat.lastMessage ? (
-                        <p className={`text-sm truncate flex-1 ${
+                        <p className={`text-sm truncate flex-1 min-w-0 ${
                           selectedChat?._id === chat._id 
                             ? 'text-white opacity-90' 
                             : themeClasses.textSecondary

@@ -5,6 +5,14 @@ import Link from 'next/link'
 import axios from 'axios'
 import { themeClasses } from '@/utils/theme'
 
+interface FormErrors {
+  firstName?: string
+  lastName?: string
+  email?: string
+  password?: string
+  adminCode?: string
+}
+
 export default function SignupPage() {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -14,51 +22,132 @@ export default function SignupPage() {
   const [adminCode, setAdminCode] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [errors, setErrors] = useState<FormErrors>({})
+
+  // Validation functions
+  const validateFirstName = (value: string): string | undefined => {
+    const trimmed = value.trim()
+    if (!trimmed) {
+      return 'First name is required'
+    }
+    if (trimmed.length > 30) {
+      return 'First name must be at most 30 characters'
+    }
+    return undefined
+  }
+
+  const validateLastName = (value: string): string | undefined => {
+    const trimmed = value.trim()
+    if (!trimmed) {
+      return 'Last name is required'
+    }
+    if (trimmed.length > 30) {
+      return 'Last name must be at most 30 characters'
+    }
+    return undefined
+  }
+
+  const validateEmail = (value: string): string | undefined => {
+    if (!value.trim()) {
+      return 'Email is required'
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(value)) {
+      return 'Valid email is required'
+    }
+    return undefined
+  }
+
+  const validatePassword = (value: string): string | undefined => {
+    if (!value) {
+      return 'Password is required'
+    }
+    if (value.length < 8) {
+      return 'Password must be at least 8 characters'
+    }
+    return undefined
+  }
+
+  const validateAdminCode = (value: string): string | undefined => {
+    if (role === 'admin' && !value.trim()) {
+      return 'Admin code is required'
+    }
+    return undefined
+  }
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {}
+    
+    const firstNameError = validateFirstName(firstName)
+    if (firstNameError) newErrors.firstName = firstNameError
+    
+    const lastNameError = validateLastName(lastName)
+    if (lastNameError) newErrors.lastName = lastNameError
+    
+    const emailError = validateEmail(email)
+    if (emailError) newErrors.email = emailError
+    
+    const passwordError = validatePassword(password)
+    if (passwordError) newErrors.password = passwordError
+    
+    if (role === 'admin') {
+      const adminCodeError = validateAdminCode(adminCode)
+      if (adminCodeError) newErrors.adminCode = adminCodeError
+    }
+    
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    
+    // Validate form before submission
+    if (!validateForm()) {
+      return
+    }
+    
     setIsLoading(true)
 
     try {
-        const response = await axios.post('http://localhost:5000/api/auth/register', {
-          firstName,
-          lastName,
-          email,
-          password,
-          role,
-          ...(role === 'admin' && { adminCode }),
-        })
-  
-        // Store token in localStorage
-        if (response.data.token) {
-          localStorage.setItem('token', response.data.token)
-          localStorage.setItem('user', JSON.stringify(response.data.user))
-        }
-  
-        // Redirect to home or chat page
-        window.location.href = '/user'
-      } catch (err) {
-        if (axios.isAxiosError(err)) {
-          // Check for validation errors
-          if (err.response?.status === 422 && err.response?.data?.errors) {
-            const validationErrors = err.response.data.errors
-              .map((error: any) => error.msg || error.message)
-              .join(', ')
-            setError(validationErrors || 'Validation failed')
-          } else {
-            const errorMessage = err.response?.data?.message || err.message || 'Registration failed'
-            setError(errorMessage)
-          }
+      const response = await axios.post('http://localhost:5000/api/auth/register', {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: email.trim().toLowerCase(),
+        password,
+        role,
+        ...(role === 'admin' && { adminCode }),
+      })
+
+      // Store token in localStorage
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token)
+        localStorage.setItem('user', JSON.stringify(response.data.user))
+      }
+
+      // Redirect to home or chat page
+      window.location.href = '/user'
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        // Check for validation errors
+        if (err.response?.status === 422 && err.response?.data?.errors) {
+          const validationErrors = err.response.data.errors
+            .map((error: any) => error.msg || error.message)
+            .join(', ')
+          setError(validationErrors || 'Validation failed')
         } else {
-          const errorMessage = err instanceof Error ? err.message : 'Something went wrong'
+          const errorMessage = err.response?.data?.message || err.message || 'Registration failed'
           setError(errorMessage)
         }
-      } finally {
-        setIsLoading(false)
+      } else {
+        const errorMessage = err instanceof Error ? err.message : 'Something went wrong'
+        setError(errorMessage)
       }
+    } finally {
+      setIsLoading(false)
     }
-  
+  }
 
   return (
     <div className={`flex min-h-screen items-center justify-center ${themeClasses.bgPrimary}`}>
@@ -94,16 +183,31 @@ export default function SignupPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          <div>
             <input
               type="text"
               placeholder="First Name"
               value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              required
-              className={`w-full rounded-lg ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border px-4 py-2.5 ${themeClasses.textPrimary} placeholder-[#8E9398] focus:outline-none focus:ring-2 focus:ring-[#2FB8A8] focus:border-transparent`}
+              onChange={(e) => {
+                setFirstName(e.target.value)
+                if (errors.firstName) {
+                  const error = validateFirstName(e.target.value)
+                  setErrors(prev => ({ ...prev, firstName: error }))
+                }
+              }}
+              onBlur={(e) => {
+                const error = validateFirstName(e.target.value)
+                setErrors(prev => ({ ...prev, firstName: error }))
+              }}
+              maxLength={30}
+              className={`w-full rounded-lg ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border px-4 py-2.5 ${themeClasses.textPrimary} placeholder-[#8E9398] focus:outline-none focus:ring-2 focus:ring-[#2FB8A8] focus:border-transparent ${
+                errors.firstName ? 'border-red-500 focus:ring-red-500' : ''
+              }`}
             />
+            {errors.firstName && (
+              <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+            )}
           </div>
 
           <div>
@@ -111,10 +215,25 @@ export default function SignupPage() {
               type="text"
               placeholder="Last Name"
               value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              required
-              className={`w-full rounded-lg ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border px-4 py-2.5 ${themeClasses.textPrimary} placeholder-[#8E9398] focus:outline-none focus:ring-2 focus:ring-[#2FB8A8] focus:border-transparent`}
+              onChange={(e) => {
+                setLastName(e.target.value)
+                if (errors.lastName) {
+                  const error = validateLastName(e.target.value)
+                  setErrors(prev => ({ ...prev, lastName: error }))
+                }
+              }}
+              onBlur={(e) => {
+                const error = validateLastName(e.target.value)
+                setErrors(prev => ({ ...prev, lastName: error }))
+              }}
+              maxLength={30}
+              className={`w-full rounded-lg ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border px-4 py-2.5 ${themeClasses.textPrimary} placeholder-[#8E9398] focus:outline-none focus:ring-2 focus:ring-[#2FB8A8] focus:border-transparent ${
+                errors.lastName ? 'border-red-500 focus:ring-red-500' : ''
+              }`}
             />
+            {errors.lastName && (
+              <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
+            )}
           </div>
 
           <div>
@@ -122,10 +241,24 @@ export default function SignupPage() {
               type="email"
               placeholder="Email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className={`w-full rounded-lg ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border px-4 py-2.5 ${themeClasses.textPrimary} placeholder-[#8E9398] focus:outline-none focus:ring-2 focus:ring-[#2FB8A8] focus:border-transparent`}
+              onChange={(e) => {
+                setEmail(e.target.value)
+                if (errors.email) {
+                  const error = validateEmail(e.target.value)
+                  setErrors(prev => ({ ...prev, email: error }))
+                }
+              }}
+              onBlur={(e) => {
+                const error = validateEmail(e.target.value)
+                setErrors(prev => ({ ...prev, email: error }))
+              }}
+              className={`w-full rounded-lg ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border px-4 py-2.5 ${themeClasses.textPrimary} placeholder-[#8E9398] focus:outline-none focus:ring-2 focus:ring-[#2FB8A8] focus:border-transparent ${
+                errors.email ? 'border-red-500 focus:ring-red-500' : ''
+              }`}
             />
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+            )}
           </div>
 
           <div>
@@ -133,11 +266,25 @@ export default function SignupPage() {
               type="password"
               placeholder="Password (min. 8 characters)"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
+              onChange={(e) => {
+                setPassword(e.target.value)
+                if (errors.password) {
+                  const error = validatePassword(e.target.value)
+                  setErrors(prev => ({ ...prev, password: error }))
+                }
+              }}
+              onBlur={(e) => {
+                const error = validatePassword(e.target.value)
+                setErrors(prev => ({ ...prev, password: error }))
+              }}
               minLength={8}
-              className={`w-full rounded-lg ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border px-4 py-2.5 ${themeClasses.textPrimary} placeholder-[#8E9398] focus:outline-none focus:ring-2 focus:ring-[#2FB8A8] focus:border-transparent`}
+              className={`w-full rounded-lg ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border px-4 py-2.5 ${themeClasses.textPrimary} placeholder-[#8E9398] focus:outline-none focus:ring-2 focus:ring-[#2FB8A8] focus:border-transparent ${
+                errors.password ? 'border-red-500 focus:ring-red-500' : ''
+              }`}
             />
+            {errors.password && (
+              <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+            )}
           </div>
 
           <div>
@@ -151,7 +298,11 @@ export default function SignupPage() {
                   name="role"
                   value="user"
                   checked={role === 'user'}
-                  onChange={(e) => setRole(e.target.value as 'user' | 'admin')}
+                  onChange={(e) => {
+                    setRole(e.target.value as 'user' | 'admin')
+                    setAdminCode('')
+                    setErrors(prev => ({ ...prev, adminCode: undefined }))
+                  }}
                   className="mr-2 accent-[#2FB8A8]"
                 />
                 <span className={`text-sm ${themeClasses.textPrimary}`}>User</span>
@@ -162,7 +313,10 @@ export default function SignupPage() {
                   name="role"
                   value="admin"
                   checked={role === 'admin'}
-                  onChange={(e) => setRole(e.target.value as 'user' | 'admin')}
+                  onChange={(e) => {
+                    setRole(e.target.value as 'user' | 'admin')
+                    setErrors(prev => ({ ...prev, adminCode: undefined }))
+                  }}
                   className="mr-2 accent-[#2FB8A8]"
                 />
                 <span className={`text-sm ${themeClasses.textPrimary}`}>Admin</span>
@@ -176,10 +330,24 @@ export default function SignupPage() {
                 type="password"
                 placeholder="Admin Signup Code"
                 value={adminCode}
-                onChange={(e) => setAdminCode(e.target.value)}
-                required
-                className={`w-full rounded-lg ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border px-4 py-2.5 ${themeClasses.textPrimary} placeholder-[#8E9398] focus:outline-none focus:ring-2 focus:ring-[#2FB8A8] focus:border-transparent`}
+                onChange={(e) => {
+                  setAdminCode(e.target.value)
+                  if (errors.adminCode) {
+                    const error = validateAdminCode(e.target.value)
+                    setErrors(prev => ({ ...prev, adminCode: error }))
+                  }
+                }}
+                onBlur={(e) => {
+                  const error = validateAdminCode(e.target.value)
+                  setErrors(prev => ({ ...prev, adminCode: error }))
+                }}
+                className={`w-full rounded-lg ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border px-4 py-2.5 ${themeClasses.textPrimary} placeholder-[#8E9398] focus:outline-none focus:ring-2 focus:ring-[#2FB8A8] focus:border-transparent ${
+                  errors.adminCode ? 'border-red-500 focus:ring-red-500' : ''
+                }`}
               />
+              {errors.adminCode && (
+                <p className="mt-1 text-sm text-red-600">{errors.adminCode}</p>
+              )}
             </div>
           )}
 

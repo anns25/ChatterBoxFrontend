@@ -243,12 +243,6 @@ export default function ProfilePage() {
     return { strength, label: labels[strength - 1] || 'Weak' }
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    router.push('/login')
-  }
-
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A'
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -260,8 +254,8 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-gray-500">Loading...</div>
+      <div className={`flex items-center justify-center h-screen ${themeClasses.bgPrimary}`}>
+        <div className={themeClasses.textSecondary}>Loading...</div>
       </div>
     )
   }
@@ -400,39 +394,39 @@ export default function ProfilePage() {
 
   return (
     <div className={`flex h-screen ${themeClasses.bgPrimary}`}>
-      <Sidebar user={user} onLogout={handleLogout} currentPage="profile" />
+      <Sidebar user={user} currentPage="profile" />
 
       <div className={`flex-1 flex flex-col overflow-y-auto ${themeClasses.bgSecondary}`}>
         {/* Header */}
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
-          <p className="text-sm text-gray-600 mt-1">
+        <div className={`p-6 border-b ${themeClasses.borderSecondary}`}>
+          <h1 className={`text-2xl font-bold ${themeClasses.textPrimary}`}>My Profile</h1>
+          <p className={`text-sm ${themeClasses.textSecondary} mt-1`}>
             Manage your account information and settings
           </p>
         </div>
 
         {/* Success/Error Messages */}
         {success && (
-          <div className="mx-6 mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+          <div className={`mx-6 mt-4 p-3 ${themeClasses.bgAccent} border ${themeClasses.borderAccent} rounded-lg ${themeClasses.textPrimary} text-sm`}>
             {success}
           </div>
         )}
         {error && (
-          <div className="mx-6 mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className={`mx-6 mt-4 p-3 bg-red-900 border border-red-700 rounded-lg text-red-200 text-sm`}>
             {error}
           </div>
         )}
 
         <div className="flex-1 p-6 space-y-6">
           {/* Profile Picture Card */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <div className={`${themeClasses.card} rounded-lg p-6`}>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">Profile Picture</h2>
+              <h2 className={`text-lg font-semibold ${themeClasses.textPrimary}`}>Profile Picture</h2>
               {user?.profilePicture && !previewImage && (
                 <button
                   onClick={handleDeleteProfilePicture}
                   disabled={isLoading}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  className={`px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm`}
                 >
                   Remove Picture
                 </button>
@@ -445,16 +439,16 @@ export default function ProfilePage() {
                   <img
                     src={previewImage}
                     alt="Preview"
-                    className="w-32 h-32 rounded-full object-cover border-4 border-blue-500"
+                    className={`w-32 h-32 rounded-full object-cover border-4 ${themeClasses.borderAccent}`}
                   />
                 ) : user?.profilePicture ? (
                   <img
                     src={user.profilePicture}
                     alt={getFullName(user.firstName, user.lastName)}
-                    className="w-32 h-32 rounded-full object-cover border-4 border-blue-500"
+                    className={`w-32 h-32 rounded-full object-cover border-4 ${themeClasses.borderAccent}`}
                   />
                 ) : (
-                  <div className="w-32 h-32 rounded-full bg-blue-500 flex items-center justify-center border-4 border-blue-500">
+                  <div className={`w-32 h-32 rounded-full ${themeClasses.bgAccent} flex items-center justify-center border-4 ${themeClasses.borderAccent}`}>
                     <span className="text-5xl font-semibold text-white">
                       {getUserInitials(user!.firstName, user!.lastName)}
                     </span>
@@ -467,7 +461,7 @@ export default function ProfilePage() {
                   <div>
                     <label
                       htmlFor="profilePictureInput"
-                      className="block text-sm font-medium text-gray-700 mb-2"
+                      className={`block text-sm font-medium ${themeClasses.textSecondary} mb-2`}
                     >
                       Choose a new profile picture
                     </label>
@@ -476,9 +470,9 @@ export default function ProfilePage() {
                       type="file"
                       accept="image/*"
                       onChange={handleFileChange}
-                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                      className={`block w-full text-sm ${themeClasses.textSecondary} file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold ${themeClasses.bgTertiary} ${themeClasses.textAccent} hover:${themeClasses.bgAccentHover}`}
                     />
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className={`mt-1 text-xs ${themeClasses.textMuted}`}>
                       JPG, PNG, GIF or WEBP. Max size: 5MB
                     </p>
                   </div>
@@ -488,7 +482,7 @@ export default function ProfilePage() {
                       <button
                         type="submit"
                         disabled={isUploadingPicture}
-                        className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        className={`px-6 py-2 ${themeClasses.btnPrimary} rounded-lg transition font-medium disabled:opacity-50 disabled:cursor-not-allowed`}
                       >
                         {isUploadingPicture ? 'Uploading...' : 'Upload Picture'}
                       </button>
@@ -499,7 +493,7 @@ export default function ProfilePage() {
                           const fileInput = document.getElementById('profilePictureInput') as HTMLInputElement
                           if (fileInput) fileInput.value = ''
                         }}
-                        className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium"
+                        className={`px-6 py-2 ${themeClasses.btnSecondary} rounded-lg transition font-medium`}
                       >
                         Cancel
                       </button>
@@ -510,13 +504,13 @@ export default function ProfilePage() {
             </div>
           </div>
           {/* Profile Information Card */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <div className={`${themeClasses.card} rounded-lg p-6`}>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">Profile Information</h2>
+              <h2 className={`text-lg font-semibold ${themeClasses.textPrimary}`}>Profile Information</h2>
               {!isEditing && (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition font-medium"
+                  className={`px-4 py-2 ${themeClasses.btnPrimary} rounded-lg transition font-medium`}
                 >
                   Edit Profile
                 </button>
@@ -526,7 +520,7 @@ export default function ProfilePage() {
             {isEditing ? (
               <form onSubmit={handleUpdateProfile} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className={`block text-sm font-medium ${themeClasses.textSecondary} mb-2`}>
                     First Name
                   </label>
                   <input
@@ -535,12 +529,12 @@ export default function ProfilePage() {
                     value={formData.firstName}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-4 py-2 ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border rounded-lg focus:outline-none focus:ring-2 ${themeClasses.textPrimary} focus:${themeClasses.borderAccent}`}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className={`block text-sm font-medium ${themeClasses.textSecondary} mb-2`}>
                     Last Name
                   </label>
                   <input
@@ -549,12 +543,12 @@ export default function ProfilePage() {
                     value={formData.lastName}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-4 py-2 ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border rounded-lg focus:outline-none focus:ring-2 ${themeClasses.textPrimary} focus:${themeClasses.borderAccent}`}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className={`block text-sm font-medium ${themeClasses.textSecondary} mb-2`}>
                     Email
                   </label>
                   <input
@@ -563,7 +557,7 @@ export default function ProfilePage() {
                     value={formData.email}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-4 py-2 ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border rounded-lg focus:outline-none focus:ring-2 ${themeClasses.textPrimary} focus:${themeClasses.borderAccent}`}
                   />
                 </div>
 
@@ -571,7 +565,7 @@ export default function ProfilePage() {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`px-6 py-2 ${themeClasses.btnPrimary} rounded-lg transition font-medium disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     {isLoading ? 'Saving...' : 'Save Changes'}
                   </button>
@@ -586,7 +580,7 @@ export default function ProfilePage() {
                       })
                       setError('')
                     }}
-                    className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium"
+                    className={`px-6 py-2 ${themeClasses.btnSecondary} rounded-lg transition font-medium`}
                   >
                     Cancel
                   </button>
@@ -602,31 +596,31 @@ export default function ProfilePage() {
                       className="w-20 h-20 rounded-full object-cover"
                     />
                   ) : (
-                    <div className="w-20 h-20 rounded-full bg-blue-500 flex items-center justify-center">
+                    <div className={`w-20 h-20 rounded-full ${themeClasses.bgAccent} flex items-center justify-center`}>
                       <span className="text-3xl font-semibold text-white">
                         {getUserInitials(user.firstName, user.lastName)}
                       </span>
                     </div>
                   )}
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900">{getFullName(user.firstName, user.lastName)}</h3>
-                    <p className="text-gray-600">{user.email}</p>
-                    <span className="inline-block mt-2 px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+                    <h3 className={`text-xl font-semibold ${themeClasses.textPrimary}`}>{getFullName(user.firstName, user.lastName)}</h3>
+                    <p className={themeClasses.textSecondary}>{user.email}</p>
+                    <span className={`inline-block mt-2 px-3 py-1 text-xs font-medium ${themeClasses.bgAccent} ${themeClasses.textPrimary} rounded`}>
                       {user.role}
                     </span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-6 border-t border-gray-200">
+                <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-6 border-t ${themeClasses.borderSecondary}`}>
                   <div>
-                    <p className="text-sm text-gray-500">Account Created</p>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className={`text-sm ${themeClasses.textMuted}`}>Account Created</p>
+                    <p className={`text-sm font-medium ${themeClasses.textPrimary}`}>
                       {formatDate(profile?.createdAt)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Last Login</p>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className={`text-sm ${themeClasses.textMuted}`}>Last Login</p>
+                    <p className={`text-sm font-medium ${themeClasses.textPrimary}`}>
                       {formatDate(profile?.lastLoginAt)}
                     </p>
                   </div>
@@ -636,13 +630,13 @@ export default function ProfilePage() {
           </div>
 
           {/* Change Password Card */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <div className={`${themeClasses.card} rounded-lg p-6`}>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">Change Password</h2>
+              <h2 className={`text-lg font-semibold ${themeClasses.textPrimary}`}>Change Password</h2>
               {!isChangingPassword && (
                 <button
                   onClick={() => setIsChangingPassword(true)}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium"
+                  className={`px-4 py-2 ${themeClasses.btnSecondary} rounded-lg transition font-medium`}
                 >
                   Change Password
                 </button>
@@ -652,7 +646,7 @@ export default function ProfilePage() {
             {isChangingPassword && (
               <form onSubmit={handleChangePassword} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className={`block text-sm font-medium ${themeClasses.textSecondary} mb-2`}>
                     Current Password
                   </label>
                   <input
@@ -661,12 +655,12 @@ export default function ProfilePage() {
                     value={passwordData.currentPassword}
                     onChange={handlePasswordChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-4 py-2 ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border rounded-lg focus:outline-none focus:ring-2 ${themeClasses.textPrimary} focus:${themeClasses.borderAccent}`}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className={`block text-sm font-medium ${themeClasses.textSecondary} mb-2`}>
                     New Password
                   </label>
                   <input
@@ -676,12 +670,12 @@ export default function ProfilePage() {
                     onChange={handlePasswordChange}
                     required
                     minLength={8}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-4 py-2 ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border rounded-lg focus:outline-none focus:ring-2 ${themeClasses.textPrimary} focus:${themeClasses.borderAccent}`}
                   />
                   {passwordData.newPassword && (
                     <div className="mt-2">
                       <div className="flex items-center space-x-2">
-                        <div className="flex-1 bg-gray-200 rounded-full h-2">
+                        <div className={`flex-1 ${themeClasses.bgTertiary} rounded-full h-2`}>
                           <div
                             className={`h-2 rounded-full transition-all ${
                               getPasswordStrength(passwordData.newPassword).strength === 1
@@ -689,26 +683,26 @@ export default function ProfilePage() {
                                 : getPasswordStrength(passwordData.newPassword).strength === 2
                                 ? 'bg-yellow-500 w-2/4'
                                 : getPasswordStrength(passwordData.newPassword).strength === 3
-                                ? 'bg-blue-500 w-3/4'
+                                ? `${themeClasses.bgAccent} w-3/4`
                                 : getPasswordStrength(passwordData.newPassword).strength === 4
                                 ? 'bg-green-500 w-full'
                                 : ''
                             }`}
                           ></div>
                         </div>
-                        <span className="text-xs text-gray-600">
+                        <span className={`text-xs ${themeClasses.textSecondary}`}>
                           {getPasswordStrength(passwordData.newPassword).label}
                         </span>
                       </div>
                     </div>
                   )}
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className={`mt-1 text-xs ${themeClasses.textMuted}`}>
                     Must be at least 8 characters
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className={`block text-sm font-medium ${themeClasses.textSecondary} mb-2`}>
                     Confirm New Password
                   </label>
                   <input
@@ -718,7 +712,7 @@ export default function ProfilePage() {
                     onChange={handlePasswordChange}
                     required
                     minLength={8}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-4 py-2 ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border rounded-lg focus:outline-none focus:ring-2 ${themeClasses.textPrimary} focus:${themeClasses.borderAccent}`}
                   />
                 </div>
 
@@ -726,7 +720,7 @@ export default function ProfilePage() {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`px-6 py-2 ${themeClasses.btnPrimary} rounded-lg transition font-medium disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     {isLoading ? 'Changing...' : 'Change Password'}
                   </button>
@@ -741,7 +735,7 @@ export default function ProfilePage() {
                       })
                       setError('')
                     }}
-                    className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium"
+                    className={`px-6 py-2 ${themeClasses.btnSecondary} rounded-lg transition font-medium`}
                   >
                     Cancel
                   </button>

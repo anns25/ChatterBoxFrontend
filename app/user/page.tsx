@@ -382,14 +382,12 @@ export default function UserChatPage() {
     })
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
+  const handleLogoutCleanup = () => {
     if (socketRef.current) {
       socketRef.current.disconnect()
     }
-    router.push('/login')
   }
+  
 
   // Show loading state until user is loaded
   if (!user) {
@@ -401,11 +399,11 @@ export default function UserChatPage() {
   }
 
   return (
-    <div className={`flex h-screen ${themeClasses.bgPrimary}`}>
-      <Sidebar user={user} onLogout={handleLogout} currentPage="chats" />
+    <div className={`flex h-screen overflow-hidden ${themeClasses.bgPrimary}`}>
+      <Sidebar user={user} onLogoutCleanup={handleLogoutCleanup} currentPage="chats" />
 
       {/* ChatList - hidden on mobile when chat is selected, visible otherwise */}
-      <div className={`${selectedChat ? 'hidden md:block' : 'block'} w-full md:w-80 flex flex-col ${themeClasses.bgPrimary} ${themeClasses.borderPrimary} border-r`}>
+      <div className={`${selectedChat ? 'hidden md:flex' : 'flex'} w-[calc(100vw-4rem)] md:w-80 flex-col h-screen overflow-hidden ${themeClasses.bgPrimary} ${themeClasses.borderPrimary} border-r`}>
         <ChatList
           chats={chats}
           selectedChat={selectedChat}
@@ -415,18 +413,25 @@ export default function UserChatPage() {
         />
       </div>
 
-      <ConversationWindow
-        selectedChat={selectedChat}
-        messages={messages}
-        currentUserId={user.id}
-        messageInput={messageInput}
-        setMessageInput={setMessageInput}
-        onSendMessage={handleSendMessage}
-        onTyping={handleTyping}
-        isTyping={isTyping}
-        onlineUsers={onlineUsers}
-        onBack={() => setSelectedChat(null)}
-      />
+      {/* ConversationWindow - full width on mobile when chat selected, flex-1 on desktop */}
+      <div className={`${
+        selectedChat 
+          ? 'flex-1 w-full md:flex-1' 
+          : 'hidden md:flex md:flex-1'
+      } flex flex-col h-screen min-h-0`}>
+        <ConversationWindow
+          selectedChat={selectedChat}
+          messages={messages}
+          currentUserId={user.id}
+          messageInput={messageInput}
+          setMessageInput={setMessageInput}
+          onSendMessage={handleSendMessage}
+          onTyping={handleTyping}
+          isTyping={isTyping}
+          onlineUsers={onlineUsers}
+          onBack={() => setSelectedChat(null)}
+        />
+      </div>
     </div>
   )
 }

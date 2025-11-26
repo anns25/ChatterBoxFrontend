@@ -32,4 +32,12 @@ export interface User {
     updatedAt: Date | string
     isGroupChat?: boolean
     groupName?: string
+    groupPicture?: string
+    admin?: {
+      _id: string
+      firstName: string
+      lastName: string
+      email: string
+      profilePicture?: string
+    }
   }
