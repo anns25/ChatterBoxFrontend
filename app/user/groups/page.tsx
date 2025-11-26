@@ -7,6 +7,7 @@ import Sidebar from '../../../components/Sidebar'
 import { User, Chat } from '@/types'
 import { getFullName } from '@/utils/userUtils'
 import { themeClasses } from '@/utils/theme'
+import { API_BASE_URL, getApiUrl } from '@/utils/config'
 
 interface FormErrors {
   groupName?: string
@@ -79,7 +80,7 @@ export default function GroupsPage() {
     try {
       const token = localStorage.getItem('token')
       const response = await axios.get(
-        'http://localhost:5000/api/chats/admin-groups',
+        getApiUrl('api/chats/admin-groups'),
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -100,7 +101,7 @@ export default function GroupsPage() {
       try {
         const token = localStorage.getItem('token')
         const response = await axios.get(
-          `http://localhost:5000/api/users/search?q=${encodeURIComponent(searchQuery)}`,
+          getApiUrl(`api/users/search?q=${encodeURIComponent(searchQuery)}`),
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -241,7 +242,7 @@ export default function GroupsPage() {
       }
 
       await axios.post(
-        'http://localhost:5000/api/chats/group',
+        getApiUrl('api/chats/group'),
         formData,
         {
           headers: { 
@@ -305,7 +306,7 @@ export default function GroupsPage() {
     try {
       const token = localStorage.getItem('token')
       await axios.patch(
-        `http://localhost:5000/api/chats/group/${editingGroup._id}/name`,
+        getApiUrl(`api/chats/group/${editingGroup._id}/name`),
         { groupName: editGroupName.trim() },
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -344,7 +345,7 @@ export default function GroupsPage() {
       formData.append('groupPicture', file)
 
       await axios.patch (
-        `http://localhost:5000/api/chats/group/${editingGroup._id}/picture`,
+        getApiUrl(`api/chats/group/${editingGroup._id}/picture`),
         formData,
         {
           headers: {
@@ -380,7 +381,7 @@ export default function GroupsPage() {
     try {
       const token = localStorage.getItem('token')
       await axios.delete(
-        `http://localhost:5000/api/chats/group/${editingGroup._id}/picture`,
+        getApiUrl(`api/chats/group/${editingGroup._id}/picture`),
         { headers: { Authorization: `Bearer ${token}` } }
       )
 

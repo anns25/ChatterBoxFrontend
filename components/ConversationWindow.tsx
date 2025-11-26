@@ -6,6 +6,7 @@ import { getUserInitials, getFullName } from '../utils/userUtils'
 import MessageRewriteModal from './MessageRewriteModal'
 import { themeClasses, themeStyles, componentStyles } from '../utils/theme'
 import axios from 'axios'
+import { getApiUrl } from '@/utils/config'
 
 interface ConversationWindowProps {
   selectedChat: Chat | null
@@ -230,7 +231,7 @@ export default function ConversationWindow({
     try {
       const token = localStorage.getItem('token')
       const response = await axios.patch(
-        `http://localhost:5000/api/chats/group/${selectedChat._id}/name`,
+        getApiUrl(`chats/group/${selectedChat._id}/name`),
         { groupName: newGroupName.trim() },
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -297,7 +298,7 @@ export default function ConversationWindow({
       formData.append('groupPicture', file)
 
       const response = await axios.patch (
-        `http://localhost:5000/api/chats/group/${selectedChat._id}/picture`,
+        getApiUrl(`chats/group/${selectedChat._id}/picture`),
         formData,
         {
           headers: {
@@ -340,7 +341,7 @@ export default function ConversationWindow({
     try {
       const token = localStorage.getItem('token')
       await axios.delete(
-        `http://localhost:5000/api/chats/group/${selectedChat._id}/picture`,
+        getApiUrl(`chats/group/${selectedChat._id}/picture`),
         { headers: { Authorization: `Bearer ${token}` } }
       )
 

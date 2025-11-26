@@ -8,6 +8,7 @@ import { User } from '../../../types'
 import { getUserInitials, getFullName } from '@/utils/userUtils'
 import Image from 'next/image'
 import { themeClasses, themeStyles, componentStyles } from '@/utils/theme'
+import { getApiUrl } from '@/utils/config'
 
 interface UserProfile {
   _id: string
@@ -76,7 +77,7 @@ export default function ProfilePage() {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem('token')
-        const response = await axios.get(`http://localhost:5000/api/users/${user.id}`, {
+        const response = await axios.get(getApiUrl(`api/users/${user.id}`), {
           headers: { Authorization: `Bearer ${token}` },
         })
         setProfile(response.data)
@@ -129,7 +130,7 @@ export default function ProfilePage() {
         if (!user) return
         
         const response = await axios.patch(
-          `http://localhost:5000/api/users/profile`,
+          getApiUrl('api/users/profile'),
           formData,
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -199,7 +200,7 @@ export default function ProfilePage() {
     try {
       const token = localStorage.getItem('token')
       await axios.patch(
-        `http://localhost:5000/api/users/password`,
+        getApiUrl('api/users/password'),
         {
           currentPassword: passwordData.currentPassword,
           newPassword: passwordData.newPassword,
@@ -305,7 +306,7 @@ export default function ProfilePage() {
       formData.append('profilePicture', file)
 
       const response = await axios.post(
-        'http://localhost:5000/api/users/profile-picture',
+        getApiUrl('api/users/profile-picture'),
         formData,
         {
           headers: {
@@ -360,7 +361,7 @@ export default function ProfilePage() {
     try {
       const token = localStorage.getItem('token')
       const response = await axios.delete(
-        'http://localhost:5000/api/users/profile-picture',
+        getApiUrl('api/users/profile-picture'),
         {
           headers: { Authorization: `Bearer ${token}` },
         }

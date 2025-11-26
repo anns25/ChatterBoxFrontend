@@ -9,6 +9,7 @@ import ConversationWindow from '../../components/ConversationWindow'
 import ChatList from '@/components/ChatList'
 import { User, Message, Chat } from '@/types'
 import { themeClasses, themeStyles, componentStyles } from '@/utils/theme'
+import { API_BASE_URL, getApiUrl } from '@/utils/config'
 
 export default function UserChatPage() {
   const router = useRouter()
@@ -87,7 +88,7 @@ export default function UserChatPage() {
       const token = localStorage.getItem('token')
       if (!token) return
       
-      const response = await axios.get(`http://localhost:5000/api/chats/${chatId}/messages`, {
+      const response = await axios.get(getApiUrl(`api/chats/${chatId}/messages`), {
         headers: { Authorization: `Bearer ${token}` },
       })
       
@@ -126,7 +127,7 @@ export default function UserChatPage() {
       const token = localStorage.getItem('token')
       if (!token) return []
       
-      const response = await axios.get('http://localhost:5000/api/chats', {
+      const response = await axios.get(getApiUrl('api/chats'), {
         headers: { Authorization: `Bearer ${token}` },
       })
       const fetchedChats = response.data
@@ -220,7 +221,7 @@ export default function UserChatPage() {
     if (!token) return
 
     // Initialize Socket.IO
-    socketRef.current = io('http://localhost:5000', {
+    socketRef.current = io(API_BASE_URL, {
       auth: { token },
     })
 

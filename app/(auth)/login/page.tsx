@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import axios from 'axios'
 import { themeClasses } from '@/utils/theme'
+import { getApiUrl } from '@/utils/config'
 
 interface FormErrors {
   email?: string
@@ -61,7 +62,7 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
+      const response = await axios.post(getApiUrl('api/auth/login'), {
         email: email.trim().toLowerCase(),
         password,
       })

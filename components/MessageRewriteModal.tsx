@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { themeClasses, themeStyles, componentStyles } from '../utils/theme'
+import { getApiUrl } from '@/utils/config'
 
 interface MessageRewriteModalProps {
   isOpen: boolean
@@ -126,7 +127,7 @@ export default function MessageRewriteModal({
     try {
       const token = localStorage.getItem('token')
       const response = await axios.post(
-        'http://localhost:5000/api/ai/rewrite',
+        getApiUrl('api/ai/rewrite'),
         {
           message: originalMessage,
           rewriteType: selectedType,

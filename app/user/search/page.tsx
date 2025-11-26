@@ -8,6 +8,7 @@ import Sidebar from '../../../components/Sidebar'
 import { User } from '../../../types'
 import { getFullName, getUserInitials } from '@/utils/userUtils'
 import { themeClasses } from '@/utils/theme'
+import { API_BASE_URL, getApiUrl } from '@/utils/config'
 
 interface SearchResultUser {
   _id: string
@@ -53,7 +54,7 @@ export default function SearchPage() {
     const token = localStorage.getItem('token')
     if (!token) return
 
-    socketRef.current = io('http://localhost:5000', {
+    socketRef.current = io(API_BASE_URL, {
       auth: { token },
     })
 
@@ -102,7 +103,7 @@ export default function SearchPage() {
             : ''
   
           const response = await axios.get(
-            `http://localhost:5000/api/users/search${queryParam}`,
+            getApiUrl(`api/users/search${queryParam}`),
             {
               headers: { 
                 Authorization: `Bearer ${token}`,
@@ -159,7 +160,7 @@ export default function SearchPage() {
 
       // Create or get existing chat
       const response = await axios.post(
-        'http://localhost:5000/api/chats',
+        getApiUrl('api/chats'),
         { participantId: otherUser._id },
         {
           headers: { 

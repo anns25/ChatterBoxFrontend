@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import axios from 'axios'
 import { themeClasses } from '@/utils/theme'
+import { getApiUrl } from '@/utils/config'
 
 interface FormErrors {
   firstName?: string
@@ -111,7 +112,7 @@ export default function SignupPage() {
     setIsLoading(true)
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/register', {
+      const response = await axios.post(getApiUrl('api/auth/register'), {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         email: email.trim().toLowerCase(),
