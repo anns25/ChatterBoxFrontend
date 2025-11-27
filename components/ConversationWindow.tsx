@@ -827,9 +827,9 @@ export default function ConversationWindow({
       `}
     >
       {/* Icon only for small screens, text only for bigger */}
-      <span className="hidden min-[540px]:inline-block text-sm font-medium">Send</span>
+      {/* <span className="hidden min-[540px]:inline-block text-sm font-medium">Send</span> */}
       <svg
-        className="min-[540px]:hidden w-5 h-5"
+        className="w-5 h-5"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
