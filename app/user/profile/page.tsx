@@ -31,14 +31,14 @@ export default function ProfilePage() {
   const [success, setSuccess] = useState('')
   const [isUploadingPicture, setIsUploadingPicture] = useState(false)
   const [previewImage, setPreviewImage] = useState<string | null>(null)
-  
+
   // Form state
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
   })
-  
+
   // Password change state
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -81,7 +81,7 @@ export default function ProfilePage() {
           headers: { Authorization: `Bearer ${token}` },
         })
         setProfile(response.data)
-        
+
         // Only update user if profilePicture changed or is missing
         if (response.data.profilePicture !== user.profilePicture) {
           const updatedUser: User = {
@@ -126,35 +126,35 @@ export default function ProfilePage() {
     setIsLoading(true)
 
     try {
-        const token = localStorage.getItem('token')
-        if (!user) return
-        
-        const response = await axios.patch(
-          getApiUrl('api/users/profile'),
-          formData,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        )
-  
-        // Update localStorage with new user data
-        const updatedUser: User = {
-          id: user.id,
-          firstName: response.data.firstName,
-          lastName: response.data.lastName,
-          email: response.data.email,
-          role: user.role,
-          profilePicture: response.data.profilePicture,
+      const token = localStorage.getItem('token')
+      if (!user) return
+
+      const response = await axios.patch(
+        getApiUrl('api/users/profile'),
+        formData,
+        {
+          headers: { Authorization: `Bearer ${token}` },
         }
-        localStorage.setItem('user', JSON.stringify(updatedUser))
-        setUser(updatedUser)
-        setProfile(response.data)
-        setIsEditing(false)
-        setSuccess('Profile updated successfully!')
-        
-        // Clear success message after 3 seconds
-        setTimeout(() => setSuccess(''), 3000)
-      } catch (error) {
+      )
+
+      // Update localStorage with new user data
+      const updatedUser: User = {
+        id: user.id,
+        firstName: response.data.firstName,
+        lastName: response.data.lastName,
+        email: response.data.email,
+        role: user.role,
+        profilePicture: response.data.profilePicture,
+      }
+      localStorage.setItem('user', JSON.stringify(updatedUser))
+      setUser(updatedUser)
+      setProfile(response.data)
+      setIsEditing(false)
+      setSuccess('Profile updated successfully!')
+
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccess(''), 3000)
+    } catch (error) {
       if (axios.isAxiosError(error)) {
         setError(error.response?.data?.message || 'Failed to update profile')
       } else {
@@ -217,7 +217,7 @@ export default function ProfilePage() {
       })
       setIsChangingPassword(false)
       setSuccess('Password changed successfully!')
-      
+
       setTimeout(() => setSuccess(''), 3000)
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -233,13 +233,13 @@ export default function ProfilePage() {
   const getPasswordStrength = (password: string) => {
     if (password.length === 0) return { strength: 0, label: '' }
     if (password.length < 8) return { strength: 1, label: 'Weak' }
-    
+
     let strength = 0
     if (password.length >= 8) strength++
     if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++
     if (/\d/.test(password)) strength++
     if (/[^a-zA-Z\d]/.test(password)) strength++
-    
+
     const labels = ['Weak', 'Fair', 'Good', 'Strong']
     return { strength, label: labels[strength - 1] || 'Weak' }
   }
@@ -289,10 +289,10 @@ export default function ProfilePage() {
     e.preventDefault()
     setError('')
     setSuccess('')
-    
+
     const fileInput = document.getElementById('profilePictureInput') as HTMLInputElement
     const file = fileInput?.files?.[0]
-    
+
     if (!file) {
       setError('Please select an image file')
       return
@@ -330,7 +330,7 @@ export default function ProfilePage() {
       setProfile(response.data)
       setPreviewImage(null)
       setSuccess('Profile picture updated successfully!')
-      
+
       setTimeout(() => setSuccess(''), 3000)
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -380,7 +380,7 @@ export default function ProfilePage() {
       setUser(updatedUser)
       setProfile(response.data)
       setSuccess('Profile picture removed successfully!')
-      
+
       setTimeout(() => setSuccess(''), 3000)
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -470,15 +470,15 @@ export default function ProfilePage() {
                       className={`block w-full text-xs md:text-sm ${themeClasses.textSecondary} file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs md:file:text-sm file:font-semibold ${themeClasses.bgTertiary} ${themeClasses.textAccent} hover:${themeClasses.bgAccentHover}`}
                     />
                     <div className='flex max-[540px]:justify-center justify-between items-center'>
-                    <label
-                      htmlFor="profilePictureInput"
-                      className={`block mt-1  text-xs md:text-sm font-medium ${themeClasses.textSecondary} mb-2`}
-                    >
-                      Choose a new profile picture
-                    </label>
-                    <p className={`mt-1 text-xs max-[540px]:hidden ${themeClasses.textMuted}`}>
-                      JPG, PNG, GIF or WEBP. Max size: 5MB
-                    </p>
+                      <label
+                        htmlFor="profilePictureInput"
+                        className={`block mt-1  text-xs md:text-sm font-medium ${themeClasses.textSecondary} mb-2`}
+                      >
+                        Choose a new profile picture
+                      </label>
+                      <p className={`mt-1 text-xs max-[540px]:hidden ${themeClasses.textMuted}`}>
+                        JPG, PNG, GIF or WEBP. Max size: 5MB
+                      </p>
                     </div>
                   </div>
 
@@ -517,7 +517,7 @@ export default function ProfilePage() {
                 <button
                   onClick={() => setIsEditing(true)}
                   className={`max-[540px]:w-full px-4 py-2 ${themeClasses.btnPrimary} rounded-lg transition font-medium text-sm`}
-                  //className={`px-4 py-2 max-[540px]:w-full bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm`}
+                //className={`px-4 py-2 max-[540px]:w-full bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm`}
                 >
                   Edit Profile
                 </button>
@@ -596,9 +596,9 @@ export default function ProfilePage() {
             ) : (
               <div className="space-y-4">
                 <div className="flex flex-col max-[540px]:items-center items-center md:justify-around space-x-4 max-[540px]:space-x-0 max-[540px]:space-y-3 md:flex-row">
-                {user.profilePicture ? (
-                    <img 
-                      src={user.profilePicture} 
+                  {user.profilePicture ? (
+                    <img
+                      src={user.profilePicture}
                       alt={getFullName(user.firstName, user.lastName)}
                       className="w-16 h-16 max-[540px]:w-14 max-[540px]:h-14 md:w-20 md:h-20 rounded-full object-cover flex-shrink-0"
                     />
@@ -684,17 +684,16 @@ export default function ProfilePage() {
                       <div className="flex items-center space-x-2">
                         <div className={`flex-1 ${themeClasses.bgTertiary} rounded-full h-2`}>
                           <div
-                            className={`h-2 rounded-full transition-all ${
-                              getPasswordStrength(passwordData.newPassword).strength === 1
+                            className={`h-2 rounded-full transition-all ${getPasswordStrength(passwordData.newPassword).strength === 1
                                 ? 'bg-red-500 w-1/4'
                                 : getPasswordStrength(passwordData.newPassword).strength === 2
-                                ? 'bg-yellow-500 w-2/4'
-                                : getPasswordStrength(passwordData.newPassword).strength === 3
-                                ? `${themeClasses.bgAccent} w-3/4`
-                                : getPasswordStrength(passwordData.newPassword).strength === 4
-                                ? 'bg-green-500 w-full'
-                                : ''
-                            }`}
+                                  ? 'bg-yellow-500 w-2/4'
+                                  : getPasswordStrength(passwordData.newPassword).strength === 3
+                                    ? `${themeClasses.bgAccent} w-3/4`
+                                    : getPasswordStrength(passwordData.newPassword).strength === 4
+                                      ? 'bg-green-500 w-full'
+                                      : ''
+                              }`}
                           ></div>
                         </div>
                         <span className={`text-xs ${themeClasses.textSecondary}`}>

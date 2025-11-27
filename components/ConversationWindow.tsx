@@ -785,36 +785,63 @@ export default function ConversationWindow({
 
       {/* Message Input */}
       <form onSubmit={onSendMessage} className={`p-4 border-t flex-shrink-0 ${themeClasses.borderPrimary}`}>
-        <div className="flex space-x-2">
-          {messageInput.trim() && (
-            <button
-              type="button"
-              onClick={() => setShowRewriteModal(true)}
-              className={`px-3 py-2 rounded-lg transition text-2xl hover:scale-110 active:scale-95 ${themeClasses.textAccent} hover:opacity-80`}
-              title="Rewrite message with AI"
-            >
-              ✨
-            </button>
-          )}
-          <input
-            type="text"
-            value={messageInput}
-            onChange={(e) => {
-              setMessageInput(e.target.value)
-              onTyping()
-            }}
-            placeholder="Type a message..."
-            className={`flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${themeClasses.borderPrimary} ${themeClasses.bgSecondary} ${themeClasses.textPrimary} focus:ring-[#2FB8A8]`}
-          />
-          <button
-            type="submit"
-            disabled={!messageInput.trim()}
-            className={`px-6 py-2 rounded-lg transition font-medium disabled:opacity-50 disabled:cursor-not-allowed ${themeClasses.btnPrimary}`}
-          >
-            Send
-          </button>
-        </div>
-      </form>
+  <div className="flex items-center gap-2">
+    
+    {/* AI rewrite button */}
+    {messageInput.trim() && (
+      <button
+        type="button"
+        onClick={() => setShowRewriteModal(true)}
+        className={`shrink-0 w-10 h-10 max-[540px]:w-3 max-[540px]:h-3 flex items-center justify-center rounded-lg transition text-xl max-[540px]:text-md hover:scale-110 active:scale-95 ${themeClasses.textAccent}`}
+        title="Rewrite message with AI"
+      >
+        ✨
+      </button>
+    )}
+
+    {/* Input field should shrink when AI button exists */}
+    <input
+      type="text"
+      value={messageInput}
+      onChange={(e) => {
+        setMessageInput(e.target.value)
+        onTyping()
+      }}
+      placeholder="Type a message..."
+      className={`
+        flex-1 min-w-0 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2
+        ${themeClasses.borderPrimary} ${themeClasses.bgSecondary} ${themeClasses.textPrimary}
+
+        /* On screens <540px, reserve space for icon button */
+        ${messageInput.trim() ? 'mr-0' : ''}
+      `}
+    />
+
+    {/* Send button: text replaced by icon if <540px */}
+    <button
+      type="submit"
+      disabled={!messageInput.trim()}
+      className={`
+        shrink-0 w-10 h-10 flex items-center justify-center rounded-lg transition
+        disabled:opacity-50 ${themeClasses.btnPrimary}
+      `}
+    >
+      {/* Icon only for small screens, text only for bigger */}
+      <span className="hidden min-[540px]:inline-block text-sm font-medium">Send</span>
+      <svg
+        className="min-[540px]:hidden w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        strokeWidth="2"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
+      </svg>
+    </button>
+
+  </div>
+</form>
+
 
       <MessageRewriteModal
         isOpen={showRewriteModal}
