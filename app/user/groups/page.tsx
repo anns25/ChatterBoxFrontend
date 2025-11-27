@@ -416,7 +416,7 @@ export default function GroupsPage() {
       <Sidebar user={user} currentPage="groups" />
 
       <div className={`flex-1 flex flex-col ${themeClasses.bgSecondary} overflow-y-auto`}>
-        <div className={`p-6 border-b ${themeClasses.borderSecondary} flex justify-between items-center`}>
+        <div className={`p-6 border-b ${themeClasses.borderSecondary} flex justify-between max-[540px]:flex-col max-[540px]:items-start items-center`}>
           <div>
             <h1 className={`text-2xl font-bold ${themeClasses.textPrimary}`}>My Group Chats</h1>
             <p className={`text-sm ${themeClasses.textSecondary} mt-1`}>
@@ -429,7 +429,7 @@ export default function GroupsPage() {
               setIsEditing(false)
               handleCancelEdit()
             }}
-            className={`px-4 py-2 ${themeClasses.btnPrimary} rounded-lg transition font-medium`}
+            className={`px-4 py-2 max-[540px]:mt-3 ${themeClasses.btnPrimary} rounded-lg transition font-medium`}
           >
             {showCreateForm ? 'Cancel' : '+ Create Group'}
           </button>
@@ -454,7 +454,7 @@ export default function GroupsPage() {
                 <label className={`block text-sm font-medium ${themeClasses.textSecondary} mb-2`}>
                   Group Picture
                 </label>
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-4 max-[540px]:flex-col max-[540px]:items-start">
                   <div className="flex-shrink-0">
                     {editPreviewImage ? (
                       <img
@@ -477,7 +477,7 @@ export default function GroupsPage() {
                       type="file"
                       accept="image/*"
                       onChange={handleEditFileChange}
-                      className={`block w-full text-sm ${themeClasses.textSecondary} file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold ${themeClasses.bgTertiary} ${themeClasses.textAccent} hover:opacity-80`}
+                      className={`block w-full max-[540px]:mt-3 text-sm ${themeClasses.textSecondary} file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold ${themeClasses.bgTertiary} ${themeClasses.textAccent} hover:opacity-80`}
                     />
                     <div className="flex gap-2">
                       <button
@@ -506,7 +506,7 @@ export default function GroupsPage() {
                   <label className={`block text-sm font-medium ${themeClasses.textSecondary} mb-2`}>
                     Group Name
                   </label>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 max-[540px]:flex-col max-[540px]:items-start">
                     <input
                       type="text"
                       value={editGroupName}
@@ -526,6 +526,7 @@ export default function GroupsPage() {
                         editErrors.groupName ? 'border-red-500 focus:ring-red-500' : ''
                       }`}
                     />
+                    <div className="flex gap-2">
                     <button
                       type="submit"
                       disabled={isLoading || !editGroupName.trim()}
@@ -540,6 +541,7 @@ export default function GroupsPage() {
                     >
                       Cancel
                     </button>
+                    </div>
                   </div>
                   {editErrors.groupName && (
                     <p className="mt-1 text-sm text-red-600">{editErrors.groupName}</p>
@@ -562,7 +564,7 @@ export default function GroupsPage() {
                 <label className={`block text-sm font-medium ${themeClasses.textSecondary} mb-2`}>
                   Group Picture (Optional)
                 </label>
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-4 max-[540px]:flex-col max-[540px]:items-start">
                   <div className="flex-shrink-0">
                     {previewImage ? (
                       <img
@@ -585,7 +587,7 @@ export default function GroupsPage() {
                       type="file"
                       accept="image/*"
                       onChange={handleFileChange}
-                      className={`block w-full text-sm ${themeClasses.textSecondary} file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold ${themeClasses.bgTertiary} ${themeClasses.textAccent} hover:opacity-80`}
+                      className={`block max-[540px]:mt-3 w-full text-sm ${themeClasses.textSecondary} file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold ${themeClasses.bgTertiary} ${themeClasses.textAccent} hover:opacity-80`}
                     />
                     <p className={`mt-1 text-xs ${themeClasses.textMuted}`}>
                       JPG, PNG, GIF or WEBP. Max size: 5MB
@@ -608,13 +610,13 @@ export default function GroupsPage() {
                 </div>
               </div>
 
-              <div>
+          <div>
                 <label className={`block text-sm font-medium ${themeClasses.textSecondary} mb-2`}>
-                  Group Name
-                </label>
-                <input
-                  type="text"
-                  value={groupName}
+              Group Name
+            </label>
+            <input
+              type="text"
+              value={groupName}
                   onChange={(e) => {
                     setGroupName(e.target.value)
                     if (errors.groupName) {
@@ -626,27 +628,27 @@ export default function GroupsPage() {
                     const error = validateGroupName(e.target.value)
                     setErrors(prev => ({ ...prev, groupName: error }))
                   }}
-                  placeholder="Enter group name"
+              placeholder="Enter group name"
                   className={`w-full px-4 py-2 ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border rounded-lg focus:outline-none focus:ring-2 ${themeClasses.textPrimary} focus:${themeClasses.borderAccent} placeholder:${themeClasses.textMuted} ${
                     errors.groupName ? 'border-red-500 focus:ring-red-500' : ''
                   }`}
-                />
+            />
                 {errors.groupName && (
                   <p className="mt-1 text-sm text-red-600">{errors.groupName}</p>
                 )}
-              </div>
+          </div>
 
-              <div>
+          <div>
                 <label className={`block text-sm font-medium ${themeClasses.textSecondary} mb-2`}>
-                  Add Participants
-                </label>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search for users..."
+              Add Participants
+            </label>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search for users..."
                   className={`w-full px-4 py-2 ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border rounded-lg focus:outline-none focus:ring-2 ${themeClasses.textPrimary} focus:${themeClasses.borderAccent} placeholder:${themeClasses.textMuted}`}
-                />
+            />
                 {searchResults
                   .filter(result => {
                     const resultId = getUserId(result)
@@ -657,42 +659,42 @@ export default function GroupsPage() {
                     return (
                       <div
                         key={resultId}
-                        onClick={() => handleAddParticipant(result)}
+                      onClick={() => handleAddParticipant(result)}
                         className={`p-3 hover:${themeClasses.bgAccentHover} cursor-pointer border-b ${themeClasses.borderSecondary} last:border-b-0 transition`}
-                      >
+                    >
                         <p className={`font-medium ${themeClasses.textPrimary}`}>{getFullName(result.firstName, result.lastName)}</p>
                         <p className={`text-sm ${themeClasses.textSecondary}`}>{result.email}</p>
-                      </div>
+                    </div>
                     )
                   })}
-              </div>
+          </div>
 
-              {selectedParticipants.length > 0 && (
-                <div>
+          {selectedParticipants.length > 0 && (
+            <div>
                   <label className={`block text-sm font-medium ${themeClasses.textSecondary} mb-2`}>
-                    Selected Participants ({selectedParticipants.length})
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedParticipants.map((participant) => (
-                      <div
-                        key={participant.id}
+                Selected Participants ({selectedParticipants.length})
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {selectedParticipants.map((participant) => (
+                  <div
+                    key={participant.id}
                         className={`flex items-center space-x-2 ${themeClasses.bgAccent} px-3 py-1 rounded-full`}
-                      >
+                  >
                         <span className={`text-sm font-medium ${themeClasses.textPrimary}`}>
                           {getFullName(participant.firstName, participant.lastName)}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveParticipant(participant.id)}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveParticipant(participant.id)}
                           className={`${themeClasses.textPrimary} hover:opacity-70 transition`}
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
+                    >
+                      ×
+                    </button>
                   </div>
-                </div>
-              )}
+                ))}
+              </div>
+            </div>
+          )}
 
               {errors.participants && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
@@ -700,14 +702,14 @@ export default function GroupsPage() {
                 </div>
               )}
 
-              <button
-                type="submit"
-                disabled={isLoading || !groupName.trim() || selectedParticipants.length === 0}
+          <button
+            type="submit"
+            disabled={isLoading || !groupName.trim() || selectedParticipants.length === 0}
                 className={`w-full px-6 py-3 ${themeClasses.btnPrimary} rounded-lg transition font-medium disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                {isLoading ? 'Creating...' : 'Create Group Chat'}
-              </button>
-            </form>
+          >
+            {isLoading ? 'Creating...' : 'Create Group Chat'}
+          </button>
+        </form>
           </div>
         )}
 
@@ -727,7 +729,7 @@ export default function GroupsPage() {
               {adminGroups.map((group) => (
                 <div
                   key={group._id}
-                  className={`p-4 ${themeClasses.bgTertiary} border ${themeClasses.borderSecondary} rounded-lg hover:${themeClasses.borderAccent} transition cursor-pointer`}
+                  className={`p-4 ${themeClasses.bgTertiary} flex justify-between max-[540px]:flex-col max-[540px]:items-start border ${themeClasses.borderSecondary} rounded-lg hover:${themeClasses.borderAccent} transition cursor-pointer`}
                   onClick={() => handleOpenGroup(group._id)}
                 >
                   <div className="flex items-center space-x-3 mb-3">
@@ -758,7 +760,7 @@ export default function GroupsPage() {
                       e.stopPropagation()
                       handleEditGroup(group)
                     }}
-                    className={`w-full px-3 py-2 ${themeClasses.bgAccent} ${themeClasses.textPrimary} rounded-lg text-sm font-medium hover:opacity-80 transition`}
+                    className={`max-[540px]:w-full px-4 py-2 h-[36px] ${themeClasses.bgAccent} ${themeClasses.textPrimary} rounded-lg text-sm font-medium hover:opacity-80 transition`}
                   >
                     Edit Group
                   </button>

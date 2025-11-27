@@ -202,24 +202,24 @@ export default function SearchPage() {
   }
 
   return (
-    <div className={`flex h-screen ${themeClasses.bgPrimary}`}>
+    <div className={`flex h-screen overflow-hidden ${themeClasses.bgPrimary}`}>
       <Sidebar user={user} currentPage="search" />
 
-      <div className={`flex-1 flex flex-col ${themeClasses.bgSecondary}`}>
+      <div className={`flex-1 flex flex-col min-h-0 ${themeClasses.bgSecondary} overflow-y-auto`}>
         {/* Header */}
-        <div className={`p-6 border-b ${themeClasses.borderSecondary}`}>
-          <h1 className={`text-2xl font-bold ${themeClasses.textPrimary}`}>Search Users</h1>
-          <p className={`text-sm ${themeClasses.textSecondary} mt-1`}>
+        <div className={`flex-shrink-0 p-4 max-[540px]:p-3 md:p-6 border-b ${themeClasses.borderSecondary}`}>
+          <h1 className={`text-xl max-[540px]:text-lg md:text-2xl font-bold ${themeClasses.textPrimary}`}>Search Users</h1>
+          <p className={`text-xs max-[540px]:text-xs md:text-sm ${themeClasses.textSecondary} mt-1`}>
             Find and connect with other users
           </p>
         </div>
 
         {/* Search Input */}
-        <div className={`p-6 border-b ${themeClasses.borderSecondary}`}>
+        <div className={`flex-shrink-0 p-4 max-[540px]:p-3 md:p-6 border-b ${themeClasses.borderSecondary}`}>
           <div className="relative">
             <div className={`absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none`}>
               <svg
-                className={`h-5 w-5 ${themeClasses.textMuted}`}
+                className={`h-4 w-4 max-[540px]:h-4 md:h-5 max-[540px]:w-4 md:w-5 ${themeClasses.textMuted}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -237,22 +237,22 @@ export default function SearchPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by name or email..."
-              className={`block w-full pl-10 pr-3 py-3 ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border rounded-lg focus:outline-none focus:ring-2 ${themeClasses.textPrimary} focus:${themeClasses.borderAccent} placeholder:${themeClasses.textMuted}`}
+              className={`block w-full pl-8 max-[540px]:pl-8 md:pl-10 pr-3 py-2 max-[540px]:py-2 md:py-3 text-sm max-[540px]:text-sm md:text-base ${themeClasses.bgTertiary} ${themeClasses.borderSecondary} border rounded-lg focus:outline-none focus:ring-2 ${themeClasses.textPrimary} focus:${themeClasses.borderAccent} placeholder:${themeClasses.textMuted}`}
             />
             {isSearching && (
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                <div className={`animate-spin rounded-full h-5 w-5 border-b-2 ${themeClasses.borderAccent}`}></div>
+                <div className={`animate-spin rounded-full h-4 w-4 max-[540px]:h-4 md:h-5 max-[540px]:w-4 md:w-5 border-b-2 ${themeClasses.borderAccent}`}></div>
               </div>
             )}
           </div>
         </div>
 
         {/* Search Results */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 min-h-0 overflow-y-auto p-4 max-[540px]:p-3 md:p-6">
           {searchResults.length === 0 && !isSearching ? (
-            <div className="text-center py-12">
+            <div className="text-center py-8 max-[540px]:py-6 md:py-12">
               <svg
-                className={`mx-auto h-12 w-12 ${themeClasses.textMuted}`}
+                className={`mx-auto h-10 w-10 max-[540px]:h-8 max-[540px]:w-8 md:h-12 md:w-12 ${themeClasses.textMuted}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -264,42 +264,42 @@ export default function SearchPage() {
                   d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <h3 className={`mt-2 text-sm font-medium ${themeClasses.textPrimary}`}>No users found</h3>
-              <p className={`mt-1 text-sm ${themeClasses.textMuted}`}>
+              <h3 className={`mt-2 text-xs max-[540px]:text-xs md:text-sm font-medium ${themeClasses.textPrimary}`}>No users found</h3>
+              <p className={`mt-1 text-xs max-[540px]:text-xs md:text-sm ${themeClasses.textMuted}`}>
                 {searchQuery.trim() 
                   ? 'Try searching with a different name or email'
                   : 'No users available'}
               </p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2 max-[540px]:space-y-2 md:space-y-3">
               {searchResults.map((result) => (
                 <div
                   key={result._id}
-                  className={`flex items-center justify-between p-4 ${themeClasses.bgTertiary} rounded-lg hover:${themeClasses.bgAccentHover} transition ${themeClasses.borderSecondary} border`}
+                  className={`flex items-center justify-between max-[540px]:flex-col max-[540px]:items-center max-[540px]:gap-3 p-3 max-[540px]:p-3 md:p-4 ${themeClasses.bgTertiary} rounded-lg hover:${themeClasses.bgAccentHover} transition ${themeClasses.borderSecondary} border`}
                 >
-                  <div className="flex items-center space-x-4">
-                    <div className="relative">
+                  <div className="flex items-center space-x-3 max-[540px]:space-x-3 md:space-x-4 w-full max-[540px]:w-full">
+                    <div className="relative flex-shrink-0">
                       {result.profilePicture ? (
                         <img 
                           src={result.profilePicture} 
                           alt={getFullName(result.firstName, result.lastName)}
-                          className="w-12 h-12 rounded-full object-cover"
+                          className="w-10 h-10 max-[540px]:w-10 max-[540px]:h-10 md:w-12 md:h-12 rounded-full object-cover"
                         />
                       ) : (
-                        <div className={`w-12 h-12 rounded-full ${themeClasses.bgAccent} flex items-center justify-center`}>
-                          <span className="text-white font-semibold text-lg">
+                        <div className={`w-10 h-10 max-[540px]:w-10 max-[540px]:h-10 md:w-12 md:h-12 rounded-full ${themeClasses.bgAccent} flex items-center justify-center`}>
+                          <span className="text-white font-semibold text-base max-[540px]:text-base md:text-lg">
                             {getUserInitials(result.firstName, result.lastName)}
                           </span>
                         </div>
                       )}
                       {isUserOnline(result._id) && (
-                        <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2" style={{ backgroundColor: '#2FB8A8', borderColor: '#16181D' }}></div>
+                        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 max-[540px]:w-2.5 max-[540px]:h-2.5 md:w-3 md:h-3 rounded-full border-2" style={{ backgroundColor: '#2FB8A8', borderColor: '#16181D' }}></div>
                       )}
                     </div>
-                    <div>
-                      <p className={`font-semibold ${themeClasses.textPrimary}`}>{getFullName(result.firstName, result.lastName)}</p>
-                      <p className={`text-sm ${themeClasses.textSecondary}`}>{result.email}</p>
+                    <div className="flex-1 min-w-0 max-[540px]:text-left">
+                      <p className={`font-semibold text-sm max-[540px]:text-sm md:text-base ${themeClasses.textPrimary} truncate`}>{getFullName(result.firstName, result.lastName)}</p>
+                      <p className={`text-xs max-[540px]:text-xs md:text-sm ${themeClasses.textSecondary} truncate`}>{result.email}</p>
                       {result.role && (
                         <span className={`inline-block mt-1 px-2 py-0.5 text-xs font-medium ${themeClasses.bgAccent} ${themeClasses.textPrimary} rounded`}>
                           {result.role}
@@ -309,7 +309,7 @@ export default function SearchPage() {
                   </div>
                   <button
                     onClick={() => handleStartChat(result)}
-                    className={`px-4 py-2 ${themeClasses.btnPrimary} rounded-lg transition font-medium`}
+                    className={`whitespace-nowrap max-[540px]:w-full px-4 py-2 ${themeClasses.btnPrimary} max-[540px]:mt-0 rounded-lg transition font-medium text-sm max-[540px]:text-sm`}
                   >
                     Start Chat
                   </button>

@@ -173,14 +173,14 @@ export default function LoginPage() {
             )}
           </div>
 
-          <div className="text-right">
+          {/* <div className="text-right">
             <Link
               href="#"
               className={`text-sm font-medium ${themeClasses.textSecondary} hover:${themeClasses.textAccent} transition`}
             >
               Forgot password?
             </Link>
-          </div>
+          </div> */}
 
           <button
             type="submit"
